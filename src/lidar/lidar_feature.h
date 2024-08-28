@@ -120,6 +120,7 @@ namespace cocolic
     Plane
   };
 
+// 特征关联类
   struct PointCorrespondence
   {
     int64_t t_point;
@@ -127,10 +128,10 @@ namespace cocolic
     double scale;
     Eigen::Vector3d point;
     Eigen::Vector3d point_raw; // 
-
+    // 特征类型
     GeometryType geo_type;
 
-    // 
+    // 特征法向量
     Eigen::Vector4d geo_plane;
 
     // 

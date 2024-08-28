@@ -23,6 +23,7 @@
 // #include "lib_sophus/so3.hpp"
 #include <sophus_lib/se3.hpp>
 #include <sophus_lib/so3.hpp>
+
 // #define DEBUG_PRINT
 #define USE_ikdtree
 #define ESTIMATE_GRAVITY  1

@@ -57,8 +57,8 @@ Dr. Fu Zhang < fuzhang@hku.hk >.
 #include <ros/ros.h>
 #include <Eigen/Core>
 #include <opencv2/opencv.hpp>
-#include <common_lib.h>
-#include <kd_tree/ikd_Tree.h>
+// #include <common_lib.h>
+#include <ikd-tree/ikd_Tree.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <opencv2/core/eigen.hpp>

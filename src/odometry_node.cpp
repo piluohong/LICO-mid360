@@ -57,16 +57,16 @@ int main(int argc, char **argv) {
     odom_manager.RunBag();
   } else
   {
-    ros::Rate rate(5000);
-    // std::cout  << "RunInSubscribeMode ...\n.";
-    while(ros::ok()){
-    
-    ros::spinOnce();
-    odom_manager.RunInSubscribeMode();
-    
-    rate.sleep();
-    
- }
+      ros::Rate rate(5000);
+      // std::cout  << "RunInSubscribeMode ...\n.";
+      while(ros::ok()){
+      
+        ros::spinOnce();
+        odom_manager.RunInSubscribeMode();
+        
+        rate.sleep();
+      
+    }
   }
   double t_traj_max = odom_manager.SaveOdometry();
   std::cout << "\n✨ All Done.\n\n";

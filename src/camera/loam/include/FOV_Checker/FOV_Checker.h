@@ -2,7 +2,7 @@
 #pragma once
 #include <math.h>
 #include <cmath>
-#include "kd_tree/ikd_Tree.h"
+#include <ikd-tree/ikd_Tree.h>
 #include <Eigen/Core>
 #include <algorithm>
 

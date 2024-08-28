@@ -23,6 +23,8 @@
 #include <spline/trajectory.h>
 #include <utils/cloud_tool.h>
 #include <utils/yaml_utils.h>
+#include <ikd-tree/ikd_Tree.h>
+
 
 namespace cocolic
 {
@@ -149,6 +151,20 @@ namespace cocolic
 
     VPointCloud map_corrs_viewer;
 
+     // 更新localmap的边界
+    void localmap_fov_segment();
+    // 初始化ikdtree
+    bool initial_ikdtree();
+    // 更新localmap
+    void localmap_incremental(int64_t &Newtimestamp);
+
+    inline float point_dist(PosPoint p1, PosPoint p2)
+    {
+      float d = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z);
+      return d;
+    }
+   
+
   private:
     bool UpdateKeyFrames();
 
@@ -179,6 +195,8 @@ namespace cocolic
 
     void DownSampleCorrespondence();
 
+   
+
   private:
     Trajectory::Ptr trajectory_;
 
@@ -188,6 +206,10 @@ namespace cocolic
     std::vector<LiDARFeature> feature_cur_vec_;
     LiDARFeature feature_cur_;
     LiDARFeature feature_cur_ds_;
+    LiDARFeature feature_cur_undis_;
+    LiDARFeature feature_cur_ds_undis_;
+    LiDARFeature feature_cur_ds_world;
+    LiDARFeature featsFromMap;
     int edge_min_valid_num_;
     int surf_min_valid_num_;
     float corner_leaf_size_;
@@ -231,6 +253,27 @@ namespace cocolic
     int64_t keyframe_time_second_;
 
     int64_t cloud_reserved_time_;
+
+private:
+    //use ikd_tree in local map
+    // bool use_ikdtree_flg = true;
+    bool first_initial_ikdtree = false;
+    KD_TREE<PosPoint> ikdtree;
+    vector<BoxPointType> cub_needrm;
+    vector<KD_TREE<PosPoint>::PointVector> Nearest_Points;
+    
+    int kdtree_delete_counter = 0;
+    BoxPointType LocalMap_Points; //ikd-tree地图立方体的2个角点
+    bool Localmap_Initialized = false;
+    double cube_len = 2000.0;
+    const float MOV_THRESHOLD = 1.5f;
+    float DET_RANGE = 300.0f;
+
+    uint16_t feature_cur_ds_size;
+    int add_point_size;
+
+    const int NUM_MATCH_POINTS = 5;
+
   };
 
 } // namespace cocolic

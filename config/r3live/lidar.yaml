@@ -15,7 +15,7 @@ Livox:  # Avia
     n_scan: 6
     blind: 1.0
     group_size: 8
-    point_filter_num: 2
+    point_filter_num: 3
     inf_bound: 4
     disA: 0.01
     disB: 0.1

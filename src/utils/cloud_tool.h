@@ -55,10 +55,10 @@ inline int64_t GetCloudMaxTimeNs(const RTPointCloud::Ptr cloud) {
   assert(cloud->size() > 0 && "[GetCloudMaxTime] input empty cloud.");
   int64_t t_max = cloud->back().time;
   // 有判断必要么？
-  // for (size_t i = cloud->size() - 1; i > 0; i--) {
-  //   int64_t t_point = cloud->points[i].time;
-  //   if (t_max < t_point) t_max = t_point;
-  // }
+  for (size_t i = cloud->size() - 1; i > 0; i--) {
+    int64_t t_point = cloud->points[i].time;
+    if (t_max < t_point) t_max = t_point;
+  }
   return t_max;
 }
 

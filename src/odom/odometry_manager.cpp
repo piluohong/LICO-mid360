@@ -166,8 +166,7 @@ namespace cocolic
         else
         {
           // std::cout << "Initial again\n" << "\n";
-          // continue;
-          // return;
+          return;
         }
       }
 
@@ -212,6 +211,7 @@ namespace cocolic
 
         // fusing lidar-imu-camera to update the trajectory
         SolveLICO();
+        
 
         // deep copy
         msg_manager_->cur_msgs = NextMsgs();
@@ -343,7 +343,7 @@ namespace cocolic
 
     // lic optimization
     ProcessLICData();
-
+    
     // prior update
     trajectory_manager_->UpdateLICPrior(
         lidar_handler_->GetPointCorrespondence());
@@ -375,12 +375,14 @@ namespace cocolic
     /// [1] transform the format of lidar pointcloud : feature_cur_ -> feature_cur_ds_
     lidar_handler_->FeatureCloudHandler(msg.lidar_timestamp, msg.lidar_max_timestamp,
                                      msg.lidar_corner_cloud, msg.lidar_surf_cloud, msg.lidar_raw_cloud);  // fake points are removed
+   
 
     /// [2] coarsely optimize trajectory based on prior、imu（served as good initial values）
     trajectory_manager_->PredictTrajectory(msg.lidar_timestamp, msg.lidar_max_timestamp,
                                            traj_max_time_ns_cur, cp_add_num_cur, non_uniform_);
-
-    /// [3] update lidar local map
+    
+    
+    /// [3] update lidar local map -> instead to use ikd-Tree
     int active_idx = trajectory_->numKnots() - 1 - cp_add_num_cur - 2;
     trajectory_->SetActiveTime(trajectory_->knts[active_idx]);
     lidar_handler_->UpdateLidarSubMap();
@@ -421,7 +423,7 @@ namespace cocolic
           visual_sub_map_debug.push_back(temp_map);
           cnt++;
         }
-        ROS_INFO("Optical_flow_pts: %d\n",cnt);
+        // ROS_INFO("Optical_flow_pts: %d\n",cnt);
         cv_bridge::CvImage out_msg;
         out_msg.header.stamp = ros::Time::now();
         out_msg.encoding = sensor_msgs::image_encodings::BGR8;
@@ -454,8 +456,10 @@ namespace cocolic
 
     /// [6] update visual global map
     PosCloud::Ptr cloud_undistort = PosCloud::Ptr(new PosCloud);
-    auto latest_feature_before_active_time = lidar_handler_->GetFeatureCurrent();
-    PosCloud::Ptr cloud_distort = latest_feature_before_active_time.surface_features;
+    auto latest_feature_before_active_time = lidar_handler_->GetFeatureCurrent(); // feature_cur_
+    PosCloud::Ptr cloud_distort = latest_feature_before_active_time.surface_features;// feature_cur_.surface_features
+    // update localmap in ikdtree
+    lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp);
     if (cloud_distort->size() != 0)
     {
       trajectory_->UndistortScanInG(*cloud_distort, latest_feature_before_active_time.timestamp, *cloud_undistort);

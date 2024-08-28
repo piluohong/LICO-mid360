@@ -22,7 +22,7 @@ division_coarse: 1  # if it is uniform, decide how many control points to place 
 
 
 ### OptimizationParams ###
-t_begin_add_cam: 3.0  # [s] visual constraints will be added after the system has been successfully initialized for a while
+t_begin_add_cam: 5.0  # [s] visual constraints will be added after the system has been successfully initialized for a while
 lidar_iter: 2 #2
 use_lidar_scale: true  # scale the lidar weight
 lidar_weight: 500.0

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="config_path"       default = "/config/ct_odometry_mid360.yaml" />
-  <!-- <arg name="config_path"       default = "/config/ct_odometry_r3live.yaml" /> -->
+  <!-- <arg name="config_path"       default = "/config/ct_odometry_mid360.yaml" /> -->
+  <arg name="config_path"       default = "/config/ct_odometry_r3live.yaml" />
   <!-- <arg name="config_path"       default = "/config/ct_odometry_fastlivo.yaml" /> -->
   <!-- <arg name="config_path"       default = "/config/ct_odometry_viral.yaml" /> -->
   <!-- <arg name="config_path"       default = "/config/ct_odometry_lvisam.yaml" /> -->

@@ -75,6 +75,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
+  include
   src
   ${catkin_INCLUDE_DIRS}
   ${YAML_INCLUDE_DIRS}
@@ -109,10 +110,14 @@ list(APPEND thirdparty_libraries
 add_library(spline_lib src/spline/trajectory.cpp)
 target_link_libraries(spline_lib ${thirdparty_libraries})
 
+# add_library(ikdtree_lib src/camera/loam/include/ikd-Tree/ikd_Tree.cpp)
+# target_link_libraries(ikdtree_lib ${thirdparty_libraries})
+
 file(GLOB lidar_odometry_files
     "src/lidar/lidar_handler.cpp"
-    "src/lidar/velodyne_feature_extraction.cpp",
-    "src/lidar/livox_feature_extraction.cpp"
+    "src/lidar/velodyne_feature_extraction.cpp"
+    "src/lidar/livox_feature_extraction.cpp"  
+    "include/ikd-tree/ikd_Tree.cpp"  
 )
 add_library(lidar_lib ${lidar_odometry_files})
 target_link_libraries(lidar_lib spline_lib ${thirdparty_libraries})
@@ -136,6 +141,7 @@ add_executable(odometry_node
    src/odom/odometry_manager.cpp
    src/odom/factor/analytic_diff/marginalization_factor.cpp
    src/utils/parameter_struct.cpp
+   #include/ikd-tree/ikd_Tree.cpp
 )
 target_link_libraries(odometry_node 
    spline_lib 

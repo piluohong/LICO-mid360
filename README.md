@@ -1,5 +1,12 @@
-# LICO-mid360 using for mid360. 
+# LICO-mid360 using for mid360, it's derived from Coco-LIC. 
+* Now there has some imrpoved things:
 * Added rosbag function; 
+* Added ikd-tree to manage local-map.
+* Some bug we found:
+* When open VIO, the accuracy of the fused odometry is declined.
+* Todo:
+* I will improved the VIO part.
+
 
 **Coco-LIC: Continuous-Time Tightly-Coupled LiDAR-Inertial-Camera Odometry using Non-Uniform B-spline**
 

@@ -201,6 +201,8 @@ namespace cocolic
     Eigen::aligned_vector<Eigen::Vector2d> px_obss_;
 
     Eigen::Matrix3d K_;
+
+    bool ikdtree_debug = false;
   };
 
 } // namespace cocolic
