@@ -459,7 +459,10 @@ namespace cocolic
     auto latest_feature_before_active_time = lidar_handler_->GetFeatureCurrent(); // feature_cur_
     PosCloud::Ptr cloud_distort = latest_feature_before_active_time.surface_features;// feature_cur_.surface_features
     // update localmap in ikdtree
-    lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp);
+    double t0 = omp_get_wtime();
+    lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp,true); // ivox
+    double t1 = omp_get_wtime();
+    std::cout << "Update ikdtree : " << (t1 - t0) * 1000 << " ms" << std::endl;
     if (cloud_distort->size() != 0)
     {
       trajectory_->UndistortScanInG(*cloud_distort, latest_feature_before_active_time.timestamp, *cloud_undistort);

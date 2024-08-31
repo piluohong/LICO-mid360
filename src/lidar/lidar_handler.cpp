@@ -162,14 +162,13 @@ namespace cocolic
     // std::cout << "DS Surface Points size : " << feature_cur_ds_.surface_features->size() << std::endl;
     // std::cout << "DS Full Points size : " << feature_cur_ds_.full_cloud->size() << std::endl;
     
-     // 更新localmap边界
-    localmap_fov_segment();
-    // initial ikdtree -> true; no first scan intial -> false
+     // ikdtree: 更新localmap边界
+    // localmap_fov_segment();
+    // initial ikdtree & ivox -> true; no first scan intial -> false
     first_initial_ikdtree = initial_ikdtree();
-    
-    std::cout << "(int)first_initial_ikdtree : " << (int)first_initial_ikdtree << std::endl;
     if (first_initial_ikdtree)
     {
+      std::cout << YELLOW "(int)first_initial_ikdtree : " << (int)first_initial_ikdtree << std::endl;
       ROS_WARN("Only execute on first scan !!!! \n");
       UpdateKeyFrames();
       if (key_frame_updated_)
@@ -295,18 +294,18 @@ namespace cocolic
   bool LidarHandler::initial_ikdtree()
   {
       
-      std::cout << " Cur feats scan's size : " << feature_cur_ds_size << std::endl;
-      if (feature_cur_ds_size < 5)
-      {
-          ROS_WARN("No point, skip this scan!\n");
-          return true;
-      }
+    std::cout << " Cur feats scan's size : " << feature_cur_ds_size << std::endl;
+    if (feature_cur_ds_size < 5)
+    {
+        ROS_WARN("No point, skip this scan!\n");
+        return true;
+    }
     
     // 执行一次
-    if (ikdtree.Root_Node == nullptr)
+    if (ikdtree.Root_Node == nullptr && !use_ivox_)
     {
-      ikdtree.set_downsample_param(0.5);
-      LiDARFeature debug_world;
+      ikdtree.set_downsample_param(filter_size_map_min);
+      // LiDARFeature debug_world;
       // feature_cur_ds_world.surface_features->resize(feature_cur_ds_size);
       // UndistortScan && UndistortScanInG
       trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features,
@@ -324,12 +323,21 @@ namespace cocolic
       //                       pose_cur_to_G.matrix(), debug_world);
 
       // std::cout << feature_cur_ds_world.surface_features->points[100].x << ", " << debug_world.surface_features->points[100].x << std::endl;
+      
       ikdtree.Build(feature_cur_ds_world.surface_features->points);
       ROS_WARN("initial ikdtree successfully! \n");
       return true;
+    }else if (first_scan_flg && use_ivox_)
+    {
+      set_ivox_option();
+      trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features,
+                                  feature_cur_ds_.timestamp,
+                                  *feature_cur_ds_world.surface_features);
+      ivox_->AddPoints(feature_cur_ds_world.surface_features->points);
+      ROS_WARN("initial ivox successfully! \n");
+      return true;
     }
 
-    
     return false;
   }
 
@@ -338,7 +346,7 @@ namespace cocolic
       if (!first_initial_ikdtree)
       {
         int64_t time = Newtimestamp;
-        float  filter_size_map_min = 0.5;
+       
         // add feature_cur_ds_.surface_features to localmap
         feature_cur_ds_world.surface_features->resize(feature_cur_ds_size);
         KD_TREE<PosPoint>::PointVector PointToAdd;
@@ -389,17 +397,73 @@ namespace cocolic
         ikdtree.Add_Points(PointNoNeedDownsample, false);
         add_point_size = PointToAdd.size() + PointNoNeedDownsample.size();
 
-        KD_TREE<PosPoint>::PointVector().swap(ikdtree.PCL_Storage);
-        ikdtree.flatten(ikdtree.Root_Node, ikdtree.PCL_Storage, NOT_RECORD);
-        featsFromMap.timestamp = feature_cur_ds_.timestamp;
-        featsFromMap.time_max = feature_cur_ds_.time_max;
-        featsFromMap.surface_features->clear();
-        featsFromMap.surface_features->points = ikdtree.PCL_Storage;
-        feature_map_ds_ = featsFromMap;
+        // KD_TREE<PosPoint>::PointVector().swap(ikdtree.PCL_Storage);
+        // ikdtree.flatten(ikdtree.Root_Node, ikdtree.PCL_Storage, NOT_RECORD);
+        // featsFromMap.timestamp = feature_cur_ds_.timestamp;
+        // featsFromMap.time_max = feature_cur_ds_.time_max;
+        // featsFromMap.surface_features->clear();
+        // featsFromMap.surface_features->points = ikdtree.PCL_Storage;
+        // feature_map_ds_ = featsFromMap;
       }
        
        first_initial_ikdtree = false;
-       std::cout << "After update ikdtree's size :" << featsFromMap.surface_features->size() << std::endl;
+      //  std::cout << "After update ikdtree's size :" << featsFromMap.surface_features->size() << std::endl;
+  }
+  
+  // ivox -> UPDATE LOCAL MAP
+  void LidarHandler::localmap_incremental(int64_t &Newtimestamp, bool ivox)
+  {
+
+      if(first_initial_ikdtree)
+        return;
+      int64_t time = Newtimestamp;
+      KD_TREE<PosPoint>::PointVector points_to_add;
+      KD_TREE<PosPoint>::PointVector point_no_need_downsample;
+      points_to_add.reserve(feature_cur_ds_size);
+      point_no_need_downsample.reserve(feature_cur_ds_size);
+
+      trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features ,time , *feature_cur_ds_world.surface_features);
+        
+      for (int i = 0; i < feature_cur_ds_size; i++)
+      {
+        PosPoint point_world = feature_cur_ds_world.surface_features->points[i];
+        if (!Nearest_Points[i].empty()) {
+            const KD_TREE<PosPoint>::PointVector &points_near = Nearest_Points[i];
+
+            PosPoint mid_point;
+            mid_point.x = floor(point_world.x / filter_size_map_min_) * filter_size_map_min_ + 0.5 * filter_size_map_min_;
+            mid_point.y = floor(point_world.y / filter_size_map_min_) * filter_size_map_min_ + 0.5 * filter_size_map_min_;
+            mid_point.z = floor(point_world.z / filter_size_map_min_) * filter_size_map_min_ + 0.5 * filter_size_map_min_;
+
+            if (fabs(points_near[0].x - mid_point.x) > 0.5 * filter_size_map_min_ 
+                && fabs(points_near[0].y - mid_point.y) > 0.5 * filter_size_map_min_
+                && fabs(points_near[0].z - mid_point.z) > 0.5 * filter_size_map_min_)
+            {
+                point_no_need_downsample.push_back(point_world);
+                continue;
+            }
+
+            bool need_add = true;
+            float dist = point_dist(point_world, mid_point);
+            if (points_near.size() >= NUM_MATCH_POINTS) {
+                for (int readd_i = 0; readd_i < NUM_MATCH_POINTS; readd_i++) {
+                    if (point_dist(points_near[readd_i], mid_point) < dist + 1e-6) {
+                        need_add = false;
+                        break;
+                    }
+                }
+            }
+            if (need_add) {
+                points_to_add.emplace_back(point_world);
+            }
+          }else {
+            points_to_add.emplace_back(point_world);
+        }
+       }
+       ivox_->AddPoints(points_to_add);
+       ivox_->AddPoints(point_no_need_downsample);
+
+      first_initial_ikdtree = false;
   }
 
   
@@ -407,7 +471,6 @@ namespace cocolic
   void LidarHandler::GetLoamFeatureAssociation()
   {
     Nearest_Points.resize(feature_cur_ds_.surface_features->size()); // 设置当前帧的临近点容器
-
     LiDARFeature cur_lf_in_map;
 
     if (use_corner_feature_)
@@ -422,7 +485,10 @@ namespace cocolic
                                   *cur_lf_in_map.surface_features);
     // std::cout << feature_cur_ds_.surface_features->points[10].x << ", " <<   cur_lf_in_map.surface_features->points[10].x << std::endl;
     // 关联特征点对
+    double t0 = omp_get_wtime();
     FindCorrespondence(feature_cur_ds_, cur_lf_in_map);
+    double t1 = omp_get_wtime();
+    std::cout << "Find correspondent points pair : " << (t1 - t0) * 1000 << " ms" << std::endl;
     std::sort(point_correspondence_.begin(), point_correspondence_.end(),
               by_timestamp());
 
@@ -813,20 +879,20 @@ namespace cocolic
     point_correspondence_.clear();
     point_correspondence_.reserve(lf_cur.surface_features->size()); // 
 
-    //
-    if ((use_corner_feature_ &&
-         lf_cur.corner_features->size() < size_t(edge_min_valid_num_)) &&
-        lf_cur.surface_features->size() < size_t(surf_min_valid_num_))
-    {
-      LOG(WARNING) << "[FindCorrespondence] No enough feature points ! Corner: "
-                   << lf_cur.corner_features->size()
-                   << "; Surface: " << lf_cur.surface_features->size();
-      return false;
-    }
+    // corner feature
+    // if ((use_corner_feature_ &&
+    //      lf_cur.corner_features->size() < size_t(edge_min_valid_num_)) &&
+    //     lf_cur.surface_features->size() < size_t(surf_min_valid_num_))
+    // {
+    //   LOG(WARNING) << "[FindCorrespondence] No enough feature points ! Corner: "
+    //                << lf_cur.corner_features->size()
+    //                << "; Surface: " << lf_cur.surface_features->size();
+    //   return false;
+    // }
 
-    //  
-    size_t corner_step = lf_cur.corner_features->size() / 1500 + 1;
-    LOG(INFO) << "[corner_step] " << corner_step;
+    // //  
+    // size_t corner_step = lf_cur.corner_features->size() / 1500 + 1;
+    // LOG(INFO) << "[corner_step] " << corner_step;
 //     if (use_corner_feature_ && feature_map_ds_.corner_features->size() > 10)
 //     {
 //       for (size_t i = 0; i < lf_cur.corner_features->size(); i += corner_step)
@@ -951,10 +1017,10 @@ namespace cocolic
 //         }
 //       }
 //     }
-    int corner_feature_num = point_correspondence_.size();
+    // int corner_feature_num = point_correspondence_.size();
 
-    /// lio-sam
-    map_corrs_viewer.clear();
+    /// surface feature
+    // map_corrs_viewer.clear();
     size_t surf_step = lf_cur.surface_features->size() / 1500 + 1;
     LOG(INFO) << "[surf_step] " << surf_step;
     for (size_t i = 0; i < lf_cur.surface_features->size(); i += surf_step)
@@ -971,19 +1037,37 @@ namespace cocolic
       KD_TREE<PosPoint>::PointVector &points_near = Nearest_Points[i];
       if(first_initial_ikdtree)
       {
-        kdtree_surface_map_->nearestKSearch(point_inM, 5, k_indices, k_sqr_dists);
+        kdtree_surface_map_->nearestKSearch(point_inM, NUM_MATCH_POINTS, k_indices, k_sqr_dists);
       }
       else
       {
         // std::cout << "Debug \n";
-        ikdtree.Nearest_Search(point_inM, NUM_MATCH_POINTS, points_near, k_sqr_dists);
-        // std::cout << points_near.size() << std::endl; 
+        if (use_ivox_){
+          ivox_->GetClosestPoint(point_inM, points_near, NUM_MATCH_POINTS); // default range : 5.0
+        }else{
+          ikdtree.Nearest_Search(point_inM, NUM_MATCH_POINTS, points_near, k_sqr_dists);
+        
+        }// std::cout << points_near.size() << std::endl; 
       }
 
-
       // 距离阈值判断是否为有效点
-      if (k_sqr_dists[4] > 1.0)
-        continue;
+      bool effect_pt = true;
+      if (use_ivox_)
+      {
+        for (auto &p : points_near)
+        {
+          if (point_dist(p,point_inM) > 1.0)
+          {
+            effect_pt = false;
+            break;
+          }
+        }
+        if (!effect_pt)
+          continue;
+      }else{
+        if (k_sqr_dists[4] > 1.0)
+          continue;
+      }
 
       Eigen::Matrix<float, 5, 3> matA0;
       Eigen::Matrix<float, 5, 1> matB0;
@@ -1078,24 +1162,23 @@ namespace cocolic
         point_cor.scale = s;
         point_correspondence_.push_back(point_cor);
 
-        double color =
-            point_cor.point[0] + point_cor.point[1] + point_cor.point[2];
-
-        for (int i = 0; i < 5; ++i)
-        {
-          VPoint vp;
-          vp.x = matA0(i, 0);
-          vp.y = matA0(i, 1);
-          vp.z = matA0(i, 2);
-          vp.intensity = color;
-          map_corrs_viewer.push_back(vp);
-        }
+        // double color =
+        //     point_cor.point[0] + point_cor.point[1] + point_cor.point[2];
+        // for (int i = 0; i < 5; ++i)
+        // {
+        //   VPoint vp;
+        //   vp.x = matA0(i, 0);
+        //   vp.y = matA0(i, 1);
+        //   vp.z = matA0(i, 2);
+        //   vp.intensity = color;
+        //   map_corrs_viewer.push_back(vp);
+        // }
       }
     }
 
-    int surf_feature_num = point_correspondence_.size() - corner_feature_num;
+    int surf_feature_num = point_correspondence_.size();// - corner_feature_num;
     LOG(INFO) << "point correspondence: " << point_correspondence_.size()
-              << "; corner/surfel " << corner_feature_num << "/"
+              << "; no corner/surfel " << 2 << "/"
               << surf_feature_num;
     return true;
   }

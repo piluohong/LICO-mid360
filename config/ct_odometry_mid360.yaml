@@ -1,6 +1,6 @@
 ## Mode
 ## 1 : Odometry_Offline   |  2 : Odometry_Online
-mode: 2
+mode: 1
 odometry_mode: 0  # LIO = 0, LICO = 1
 
 log_path: /home/hong/slam/lvio/src/LICO-mid360-main/LICO-mid360-main/log
@@ -9,7 +9,7 @@ lidar_yaml: /mid360/lidar.yaml
 imu_yaml: /mid360/imu.yaml
 camera_yaml: /mid360/camera.yaml
 
-bag_path: /mnt/e/hhh_datasets/2023-10-22-14-57-22.bag   # degenerate_seq_01.bag、degenerate_seq_02.bag、hku_campus_seq_00.bag
+bag_path: /mnt/f/hhh_datasets/normal.bag   # degenerate_seq_01.bag、degenerate_seq_02.bag、hku_campus_seq_00.bag
 bag_start: 0.
 bag_durr: -1.
 
@@ -23,7 +23,7 @@ division_coarse: 1  # if it is uniform, decide how many control points to place 
 
 ### OptimizationParams ###
 t_begin_add_cam: 5.0  # [s] visual constraints will be added after the system has been successfully initialized for a while
-lidar_iter: 2 #2
+lidar_iter: 1 #2
 use_lidar_scale: true  # scale the lidar weight
 lidar_weight: 500.0
 image_weight: 4.0 #4.0

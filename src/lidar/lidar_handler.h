@@ -24,6 +24,7 @@
 #include <utils/cloud_tool.h>
 #include <utils/yaml_utils.h>
 #include <ikd-tree/ikd_Tree.h>
+#include <ivox3d/ivox3d.h>
 
 
 namespace cocolic
@@ -157,11 +158,34 @@ namespace cocolic
     bool initial_ikdtree();
     // 更新localmap
     void localmap_incremental(int64_t &Newtimestamp);
-
+    void localmap_incremental(int64_t &Newtimestamp, bool ivox);
     inline float point_dist(PosPoint p1, PosPoint p2)
     {
       float d = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z);
       return d;
+    }
+
+    inline void set_ivox_option()
+    {
+        if (ivox_nearby_type == 0) {
+            ivox_options_.nearby_type_ = IVoxType::NearbyType::CENTER;
+        } else if (ivox_nearby_type == 6) {
+            ivox_options_.nearby_type_ = IVoxType::NearbyType::NEARBY6;
+        } else if (ivox_nearby_type == 18) {
+            ivox_options_.nearby_type_ = IVoxType::NearbyType::NEARBY18;
+        } else if (ivox_nearby_type == 26) {
+            ivox_options_.nearby_type_ = IVoxType::NearbyType::NEARBY26;
+        } else {
+            std::cout << "unknown ivox_nearby_type, use NEARBY18\n";
+            ivox_options_.nearby_type_ = IVoxType::NearbyType::NEARBY18;
+        }
+
+        ivox_options_.resolution_ = 0.5; // default: 0.2
+
+        // init ivox
+        ivox_ = std::make_shared<IVoxType>(ivox_options_);
+        first_scan_flg = false;
+
     }
    
 
@@ -254,10 +278,10 @@ namespace cocolic
 
     int64_t cloud_reserved_time_;
 
-private:
+  private:
     //use ikd_tree in local map
     // bool use_ikdtree_flg = true;
-    bool first_initial_ikdtree = false;
+    bool first_initial_ikdtree;
     KD_TREE<PosPoint> ikdtree;
     vector<BoxPointType> cub_needrm;
     vector<KD_TREE<PosPoint>::PointVector> Nearest_Points;
@@ -273,6 +297,29 @@ private:
     int add_point_size;
 
     const int NUM_MATCH_POINTS = 5;
+    const float filter_size_map_min = 0.5;
+
+   
+
+    // use iVox in local map. 
+  public:
+  #ifdef IVOX_NODE_TYPE_PHC
+      using IVoxType = faster_lio::IVox<3, faster_lio::IVoxNodeType::PHC, PosPoint>; // 伪希尔伯特空间填充曲线进行查询近邻点
+  #else
+      using IVoxType = faster_lio::IVox<3, faster_lio::IVoxNodeType::DEFAULT, PosPoint>;
+  #endif
+
+  private:
+    IVoxType::Options ivox_options_;
+    std::shared_ptr<IVoxType> ivox_ = nullptr;
+
+    const double filter_size_map_min_ = 0.; // livox: 0.: faster-lio中倾向于加入scan_undistort中所有点
+    const int ivox_nearby_type = 18; // default: 16 18 26
+    const bool use_ivox_ = true;
+    // float det_range_ = 300.0f;
+    // double cube_len_ = 0;
+    // bool localmap_initialized_ = false;
+    bool first_scan_flg = true;
 
   };
 

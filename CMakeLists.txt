@@ -117,7 +117,8 @@ file(GLOB lidar_odometry_files
     "src/lidar/lidar_handler.cpp"
     "src/lidar/velodyne_feature_extraction.cpp"
     "src/lidar/livox_feature_extraction.cpp"  
-    "include/ikd-tree/ikd_Tree.cpp"  
+    "include/ikd-tree/ikd_Tree.cpp"
+    "include/ivox3d/ivox3d_node.hpp"
 )
 add_library(lidar_lib ${lidar_odometry_files})
 target_link_libraries(lidar_lib spline_lib ${thirdparty_libraries})
@@ -152,3 +153,12 @@ target_link_libraries(odometry_node
   # ${PCL_LIBRARIES}
   "/home/hong/ku/pcl-1.14.0-installpath/lib"
 )
+
+option(WITH_IVOX_NODE_TYPE_PHC "Use PHC instead of default ivox node" ON)
+
+if (WITH_IVOX_NODE_TYPE_PHC)
+    message("USING_IVOX_NODE_TYPE_PHC")
+    add_definitions(-DIVOX_NODE_TYPE_PHC)
+else ()
+    message("USING_IVOX_NODE_TYPE_DEFAULT")
+endif()

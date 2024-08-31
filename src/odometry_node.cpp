@@ -24,13 +24,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
+#include <csignal>
 #include <ros/package.h>
 #include <ros/ros.h>
 
 #include <odom/odometry_manager.h>
 
 using namespace cocolic;
+bool flg_exit = false;
+void SigHandle(int sig) {
+    flg_exit = true;
+    ROS_WARN("catch sig %d", sig);
+}
 
 int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
@@ -52,15 +57,19 @@ int main(int argc, char **argv) {
 
   OdometryManager odom_manager(config_node, nh);// 初始化數據讀入
   MODE mode = MODE(config_node["mode"].as<int>());
- 
+  
+  signal(SIGINT, SigHandle);
   if (MODE::Odometry_Offline == mode) {
     odom_manager.RunBag();
   } else
   {
+      
       ros::Rate rate(5000);
       // std::cout  << "RunInSubscribeMode ...\n.";
       while(ros::ok()){
-      
+        if (flg_exit) {
+            break;
+        }
         ros::spinOnce();
         odom_manager.RunInSubscribeMode();
         
