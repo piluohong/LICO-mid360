@@ -1,7 +1,7 @@
 # LICO-mid360 using for mid360, it's derived from Coco-LIC. 
 * Now there has some imrpoved things:
 * Added rosbag function; 
-* Added ikd-tree to manage local-map.
+* Added ikd-tree and ivox to manage local-map.
 * Some bug we found:
 * When open VIO, the accuracy of the fused odometry is declined.
 * Todo:
