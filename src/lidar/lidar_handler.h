@@ -309,13 +309,15 @@ namespace cocolic
       using IVoxType = faster_lio::IVox<3, faster_lio::IVoxNodeType::DEFAULT, PosPoint>;
   #endif
 
+    bool use_ivox_ = false;
+
   private:
     IVoxType::Options ivox_options_;
     std::shared_ptr<IVoxType> ivox_ = nullptr;
 
-    const double filter_size_map_min_ = 0.; // livox: 0.: faster-lio中倾向于加入scan_undistort中所有点
+    const double filter_size_map_min_ = 0.5; // livox: 0.: faster-lio中倾向于加入scan_undistort中所有点
     const int ivox_nearby_type = 18; // default: 16 18 26
-    const bool use_ivox_ = true;
+   
     // float det_range_ = 300.0f;
     // double cube_len_ = 0;
     // bool localmap_initialized_ = false;

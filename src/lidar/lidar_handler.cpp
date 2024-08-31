@@ -53,6 +53,7 @@ namespace cocolic
         key_frame_updated_(false)
   {
     use_corner_feature_ = yaml::GetBool(node, "use_corner_feature", false);
+    use_ivox_ = yaml::GetBool(node, "use_ivox", false);
 
     const YAML::Node &map_node = node["map_param"];
     keyframe_search_radius_ = map_node["keyframe_search_radius"].as<float>();
@@ -73,6 +74,8 @@ namespace cocolic
     keyframe_angle_degree_ = keyframe_node["angle_degree"].as<double>();
     keyframe_dist_meter_ = keyframe_node["dist_meter"].as<double>();
     keyframe_time_second_ = keyframe_node["time_second"].as<double>() * S_TO_NS;
+
+    
 
     feature_cur_vec_.clear();
   }
@@ -163,7 +166,7 @@ namespace cocolic
     // std::cout << "DS Full Points size : " << feature_cur_ds_.full_cloud->size() << std::endl;
     
      // ikdtree: 更新localmap边界
-    // localmap_fov_segment();
+    localmap_fov_segment();
     // initial ikdtree & ivox -> true; no first scan intial -> false
     first_initial_ikdtree = initial_ikdtree();
     if (first_initial_ikdtree)
@@ -219,8 +222,8 @@ namespace cocolic
 
   void LidarHandler::localmap_fov_segment()
   {
-    // if (use_ikdtree_flg)
-    // {
+    if (use_ivox_) return;
+    
 
       // static int first_flg = 0;
       cub_needrm.clear();
@@ -323,11 +326,12 @@ namespace cocolic
       //                       pose_cur_to_G.matrix(), debug_world);
 
       // std::cout << feature_cur_ds_world.surface_features->points[100].x << ", " << debug_world.surface_features->points[100].x << std::endl;
-      
+
       ikdtree.Build(feature_cur_ds_world.surface_features->points);
       ROS_WARN("initial ikdtree successfully! \n");
       return true;
-    }else if (first_scan_flg && use_ivox_)
+    }
+    else if (first_scan_flg && use_ivox_)
     {
       set_ivox_option();
       trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features,
@@ -858,7 +862,7 @@ namespace cocolic
     double t1 = omp_get_wtime();
     std::cout << "Build kdtree : " << (t1 - t0) * 1000 << " ms" << std::endl;
   }
-// use ikd-tree
+//use kd-tree
   void LidarHandler::SetTargetMap(const LiDARFeature &feature_map)
   {
     assert(!feature_map.surface_features->empty() &&
@@ -1043,7 +1047,7 @@ namespace cocolic
       {
         // std::cout << "Debug \n";
         if (use_ivox_){
-          ivox_->GetClosestPoint(point_inM, points_near, NUM_MATCH_POINTS); // default range : 5.0
+          ivox_->GetClosestPoint(point_inM, points_near, NUM_MATCH_POINTS,1.0); // default range : 5.0
         }else{
           ikdtree.Nearest_Search(point_inM, NUM_MATCH_POINTS, points_near, k_sqr_dists);
         

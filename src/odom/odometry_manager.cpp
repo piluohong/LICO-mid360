@@ -434,10 +434,10 @@ namespace cocolic
     }
 
     /// [5] finely optimize trajectory based on prior、lidar、imu、camera
+    lidar_handler_->GetLoamFeatureAssociation();
     for (int iter = 0; iter < lidar_iter_; ++iter)
     {
-      lidar_handler_->GetLoamFeatureAssociation();
-
+      
       if (process_image)
       {
         trajectory_manager_->UpdateTrajectoryWithLIC(
@@ -460,7 +460,9 @@ namespace cocolic
     PosCloud::Ptr cloud_distort = latest_feature_before_active_time.surface_features;// feature_cur_.surface_features
     // update localmap in ikdtree
     double t0 = omp_get_wtime();
-    lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp,true); // ivox
+    if(lidar_handler_->use_ivox_)
+    {  lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp,true); //ivox
+    }else lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp);//ikdtree
     double t1 = omp_get_wtime();
     std::cout << "Update ikdtree : " << (t1 - t0) * 1000 << " ms" << std::endl;
     if (cloud_distort->size() != 0)
