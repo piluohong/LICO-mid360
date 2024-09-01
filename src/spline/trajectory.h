@@ -216,6 +216,10 @@ class Trajectory : public Se3Spline<SplineOrder, double> {
 
   void UndistortScanInG(const PosCloud& scan_raw, const int64_t scan_raw_timestamp,
                         PosCloud& scan_in_target) const;
+  
+  void getPoint_world(PosPoint& point_in, PosPoint& point_out,SE3d& pose_Lk_to_G) const;
+
+  int getStart_idx(const int64_t scan_raw_timestamp) const;
 
   void SetForcedFixedTime(double time) {
     // if (time < minTime(LiDARSensor))

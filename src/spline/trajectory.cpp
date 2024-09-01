@@ -150,6 +150,40 @@ void Trajectory::UndistortScanInG(const PosCloud &scan_raw,
   scan_in_target.resize(cnt);
 }
 
+void Trajectory::getPoint_world(PosPoint& point_in, PosPoint& point_out,SE3d& pose_Lk_to_G) const
+{
+    Eigen::Vector3d p_Lk(point_in.x, point_in.y, point_in.z);
+    Eigen::Vector3d point_;
+    point_ = pose_Lk_to_G * p_Lk;
+
+    PosPoint point;
+    point_out.x = point_(0);
+    point_out.y = point_(1);
+    point_out.z = point_(2);
+    point_out.intensity = point_in.intensity;
+    point_out.timestamp = point_in.timestamp;
+} 
+
+int Trajectory::getStart_idx(const int64_t scan_raw_timestamp) const
+{
+   int start_idx = INT_MAX;
+  {
+    bool flag = false;
+    int64_t time_ns = scan_raw_timestamp;
+    for (int i = 0; i < knts.size() - 1; i++) {
+      if (time_ns >= knts[i] && time_ns < knts[i + 1]) {
+        start_idx = i;
+        flag = true;
+        break;
+      }
+    }
+    if (!flag) std::cout << "[UndistortScanInG wrong]\n";
+  }
+  start_idx -= 2;
+  if (start_idx < 0) start_idx = 0;
+  return start_idx;
+}
+
 SE3d Trajectory::GetSensorPose(const double timestamp,
                                const ExtrinsicParam &EP_StoI) const {
   double time_ns = timestamp * S_TO_NS + EP_StoI.t_offset_ns;

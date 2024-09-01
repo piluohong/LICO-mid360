@@ -309,7 +309,7 @@ namespace cocolic
     {
       ikdtree.set_downsample_param(filter_size_map_min);
       // LiDARFeature debug_world;
-      // feature_cur_ds_world.surface_features->resize(feature_cur_ds_size);
+      feature_cur_ds_world.surface_features->resize(feature_cur_ds_size);
       // UndistortScan && UndistortScanInG
       trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features,
                                   feature_cur_ds_.timestamp,
@@ -329,22 +329,25 @@ namespace cocolic
 
       ikdtree.Build(feature_cur_ds_world.surface_features->points);
       ROS_WARN("initial ikdtree successfully! \n");
+      feature_cur_ds_world.surface_features->clear();
       return true;
     }
     else if (first_scan_flg && use_ivox_)
     {
+      feature_cur_ds_world.surface_features->resize(feature_cur_ds_size);
       set_ivox_option();
       trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features,
                                   feature_cur_ds_.timestamp,
                                   *feature_cur_ds_world.surface_features);
       ivox_->AddPoints(feature_cur_ds_world.surface_features->points);
       ROS_WARN("initial ivox successfully! \n");
+      feature_cur_ds_world.surface_features->clear();
       return true;
     }
 
     return false;
   }
-
+// ikdtree -> update local map
   void LidarHandler::localmap_incremental(int64_t &Newtimestamp)
   {
       if (!first_initial_ikdtree)
@@ -352,30 +355,34 @@ namespace cocolic
         int64_t time = Newtimestamp;
        
         // add feature_cur_ds_.surface_features to localmap
-        feature_cur_ds_world.surface_features->resize(feature_cur_ds_size);
+        // feature_cur_ds_world.surface_features->resize(feature_cur_ds_size);
         KD_TREE<PosPoint>::PointVector PointToAdd;
         KD_TREE<PosPoint>::PointVector PointNoNeedDownsample;
         PointToAdd.reserve(feature_cur_ds_size);
         PointNoNeedDownsample.reserve(feature_cur_ds_size);
         // 取最新的位姿估计结果更新当前帧点云
-        trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features ,time , *feature_cur_ds_world.surface_features);
-        
+        // trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features ,time , *feature_cur_ds_world.surface_features);
+        int start_idx = trajectory_->getStart_idx(time);
         for (int i = 0; i < feature_cur_ds_size; i++)
         {
+          PosPoint point_world;
+          PosPoint point_ = feature_cur_ds_.surface_features->points[i];
+          SE3d pose_Lk_to_G = trajectory_->GetLidarPoseNURBS(point_.timestamp, start_idx); 
+          trajectory_->getPoint_world(point_,point_world,pose_Lk_to_G);
           if (!Nearest_Points[i].empty())
           {
             const KD_TREE<PosPoint>::PointVector &points_near = Nearest_Points[i];
             bool need_add = true;
             BoxPointType Box_of_Point;
             PosPoint mid_point;
-            mid_point.x = floor(feature_cur_ds_world.surface_features->points[i].x / filter_size_map_min) * filter_size_map_min + 0.5 * filter_size_map_min;
-            mid_point.y = floor(feature_cur_ds_world.surface_features->points[i].y / filter_size_map_min) * filter_size_map_min + 0.5 * filter_size_map_min;
-            mid_point.z = floor(feature_cur_ds_world.surface_features->points[i].z / filter_size_map_min) * filter_size_map_min + 0.5 * filter_size_map_min;
-            float dist = point_dist(feature_cur_ds_world.surface_features->points[i], mid_point);
-            if (fabs(points_near[0].x - mid_point.x) > 0.5 * 0.5 && fabs(points_near[0].y - mid_point.y) > 0.5 * filter_size_map_min 
+            mid_point.x = floor(point_world.x / filter_size_map_min) * filter_size_map_min + 0.5 * filter_size_map_min;
+            mid_point.y = floor(point_world.y / filter_size_map_min) * filter_size_map_min + 0.5 * filter_size_map_min;
+            mid_point.z = floor(point_world.z / filter_size_map_min) * filter_size_map_min + 0.5 * filter_size_map_min;
+            float dist = point_dist(point_world, mid_point);
+            if (fabs(points_near[0].x - mid_point.x) > 0.5 * filter_size_map_min && fabs(points_near[0].y - mid_point.y) > 0.5 * filter_size_map_min 
                 && fabs(points_near[0].z - mid_point.z) > 0.5 * filter_size_map_min)
             {
-                PointNoNeedDownsample.push_back(feature_cur_ds_world.surface_features->points[i]);
+                PointNoNeedDownsample.push_back(point_world);
                 continue;
             }
             for (int j = 0; j < NUM_MATCH_POINTS; j++)
@@ -389,11 +396,11 @@ namespace cocolic
               }
             }
             if (need_add)
-              PointToAdd.push_back(feature_cur_ds_world.surface_features->points[i]);
+              PointToAdd.push_back(point_world);
           }
           else
           {
-              PointToAdd.push_back(feature_cur_ds_world.surface_features->points[i]);
+              PointToAdd.push_back(point_world);
           } 
         }
 
@@ -421,19 +428,23 @@ namespace cocolic
       if(first_initial_ikdtree)
         return;
       int64_t time = Newtimestamp;
+      // feature_cur_ds_world.surface_features->resize(feature_cur_ds_size);
       KD_TREE<PosPoint>::PointVector points_to_add;
       KD_TREE<PosPoint>::PointVector point_no_need_downsample;
       points_to_add.reserve(feature_cur_ds_size);
       point_no_need_downsample.reserve(feature_cur_ds_size);
 
-      trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features ,time , *feature_cur_ds_world.surface_features);
-        
+      // trajectory_->UndistortScanInG(*feature_cur_ds_.surface_features ,time , *feature_cur_ds_world.surface_features);
+      int start_idx = trajectory_->getStart_idx(time);
       for (int i = 0; i < feature_cur_ds_size; i++)
       {
-        PosPoint point_world = feature_cur_ds_world.surface_features->points[i];
+        PosPoint point_world;
+        PosPoint point_ = feature_cur_ds_.surface_features->points[i];
+        SE3d pose_Lk_to_G = trajectory_->GetLidarPoseNURBS(point_.timestamp, start_idx); 
+        trajectory_->getPoint_world(point_,point_world,pose_Lk_to_G);
+
         if (!Nearest_Points[i].empty()) {
             const KD_TREE<PosPoint>::PointVector &points_near = Nearest_Points[i];
-
             PosPoint mid_point;
             mid_point.x = floor(point_world.x / filter_size_map_min_) * filter_size_map_min_ + 0.5 * filter_size_map_min_;
             mid_point.y = floor(point_world.y / filter_size_map_min_) * filter_size_map_min_ + 0.5 * filter_size_map_min_;
@@ -1047,7 +1058,7 @@ namespace cocolic
       {
         // std::cout << "Debug \n";
         if (use_ivox_){
-          ivox_->GetClosestPoint(point_inM, points_near, NUM_MATCH_POINTS,1.0); // default range : 5.0
+          ivox_->GetClosestPoint(point_inM, points_near, NUM_MATCH_POINTS); // default range : 5.0
         }else{
           ikdtree.Nearest_Search(point_inM, NUM_MATCH_POINTS, points_near, k_sqr_dists);
         
