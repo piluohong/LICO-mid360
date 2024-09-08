@@ -384,7 +384,7 @@ public:
             get_ros_parameter( m_ros_node_handle, "r3live_common/esikf_iter_times", esikf_iter_times, 2 );
             get_ros_parameter( m_ros_node_handle, "r3live_common/estimate_i2c_extrinsic", m_if_estimate_i2c_extrinsic, 0 );
             get_ros_parameter( m_ros_node_handle, "r3live_common/estimate_intrinsic", m_if_estimate_intrinsic, 0 );
-            get_ros_parameter( m_ros_node_handle, "r3live_common/maximum_vio_tracked_pts", m_maximum_vio_tracked_pts, 600 );
+            get_ros_parameter( m_ros_node_handle, "r3live_common/maximum_vio_tracked_pts", m_maximum_vio_tracked_pts, 300);
 
             // [r3live config]
             m_if_record_mvs = 0;
@@ -393,7 +393,7 @@ public:
             m_image_downsample_ratio = 1.0;
             m_if_estimate_i2c_extrinsic = 0;
             m_if_estimate_intrinsic = 0;
-            m_maximum_vio_tracked_pts = 1000;  // 600
+            m_maximum_vio_tracked_pts = 500;  // 600
             m_append_global_map_point_step = 4;  //
         }
         if ( 1 )

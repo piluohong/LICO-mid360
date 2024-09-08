@@ -101,6 +101,9 @@ namespace cocolic
     K_ << fx, 0.0, cx,
         0.0, fy, cy,
         0.0, 0.0, 1.0;
+    
+    // ncnn
+   
 
     // trajectory parameterized by b-spline
     trajectory_manager_ = std::make_shared<TrajectoryManager>(node, trajectory_);
@@ -414,21 +417,24 @@ namespace cocolic
         for (auto it = map_rgb_pts_in_last_frame_pos.begin(); it != map_rgb_pts_in_last_frame_pos.end(); it++)
         {
           RGB_pts *rgb_pt = ((RGB_pts *)it->first);
-          cv::circle(img_debug, it->second, 2, cv::Scalar(0, 255, 0), 2, 8);  // optical flow + ransac *2 -> 2d association（green）
-          VPoint temp_map;
-          temp_map.x = rgb_pt->get_pos()(0, 0);
-          temp_map.y = rgb_pt->get_pos()(1, 0);
-          temp_map.z = rgb_pt->get_pos()(2, 0);
-          temp_map.intensity = 0.;
-          visual_sub_map_debug.push_back(temp_map);
+            cv::circle(img_debug, it->second, 2, cv::Scalar(0, 255, 0), 2, 8);  // optical flow + ransac *2 -> 2d association（green）
+            VPoint temp_map;
+            temp_map.x = rgb_pt->get_pos()(0, 0);
+            temp_map.y = rgb_pt->get_pos()(1, 0);
+            temp_map.z = rgb_pt->get_pos()(2, 0);
+            temp_map.intensity = 0.;
+            // 
+            
+            visual_sub_map_debug.push_back(temp_map);
           cnt++;
+          
         }
-        // ROS_INFO("Optical_flow_pts: %d\n",cnt);
+        ROS_INFO("Optical_flow_pts: %d\n",cnt);
         cv_bridge::CvImage out_msg;
         out_msg.header.stamp = ros::Time::now();
         out_msg.encoding = sensor_msgs::image_encodings::BGR8;
         out_msg.image = img_debug;
-        odom_viewer_.PublishTrackImg(out_msg.toImageMsg());
+        odom_viewer_.PublishTrackImg(out_msg.toImageMsg()); // track_img
         odom_viewer_.PublishSubVisualMap(visual_sub_map_debug);
       }
     }
@@ -476,10 +482,10 @@ namespace cocolic
     {
       SE3d Twc = trajectory_->GetCameraPoseNURBS(msg.image_timestamp);
       camera_handler_->AssociateNewPointsToCurrentImg(Twc.unit_quaternion(), Twc.translation());
-
+      
+      cv::Mat img_debug = camera_handler_->img_pose_->m_img.clone();
       if (odom_viewer_.pub_undistort_scan_in_cur_img_.getNumSubscribers() != 0)
       {
-        cv::Mat img_debug = camera_handler_->img_pose_->m_img.clone();
         {
           for (int i = 0; i < cloud_undistort->points.size(); i++)
           {
@@ -490,7 +496,11 @@ namespace cocolic
             Eigen::Vector3d pt_cam = Rwc.transpose() * pt_e - Rwc.transpose() * twc;
             double X = pt_cam.x(), Y = pt_cam.y(), Z = pt_cam.z();
             cv::Point2f pix(K_(0, 0) * X / Z + K_(0, 2), K_(1, 1) * Y / Z + K_(1, 2));
-            cv::circle(img_debug, pix, 2, cv::Scalar(0, 0, 255), 2, 8);
+            Eigen::Vector3f p_(cloud_undistort->points[i].x,cloud_undistort->points[i].y,cloud_undistort->points[i].z);
+            float dist = pointDistance(p_);
+            float r,g,b;
+            getColor(dist,100,r,g,b);
+            cv::circle(img_debug, pix, 2, cv::Scalar(r,g, b), 3, 8);
           }
           cv_bridge::CvImage out_msg;
           out_msg.header.stamp = ros::Time::now();
@@ -500,22 +510,22 @@ namespace cocolic
         }
       }
 
-      if (odom_viewer_.pub_old_and_new_added_points_in_cur_img_.getNumSubscribers() != 0)
-      {
-        cv::Mat img_debug = camera_handler_->img_pose_->m_img.clone();
-        auto obss = camera_handler_->op_track.m_map_rgb_pts_in_last_frame_pos;
-        for (auto it = obss.begin(); it != obss.end(); it++)
-        {
-          cv::Point2f pix = it->second;
-          cv::circle(img_debug, pix, 2, cv::Scalar(0, 255, 0), -1, 8);
-        }
+      // if (odom_viewer_.pub_old_and_new_added_points_in_cur_img_.getNumSubscribers() != 0)
+      // {
+      //   cv::Mat img_debug = camera_handler_->img_pose_->m_img.clone();
+      //   auto obss = camera_handler_->op_track.m_map_rgb_pts_in_last_frame_pos;
+      //   for (auto it = obss.begin(); it != obss.end(); it++)
+      //   {
+      //     cv::Point2f pix = it->second;
+      //     cv::circle(img_debug, pix, 2, cv::Scalar(0, 255, 0), -1, 8);
+      //   }
 
-        cv_bridge::CvImage out_msg;
-        out_msg.header.stamp = ros::Time::now();
-        out_msg.encoding = sensor_msgs::image_encodings::BGR8;
-        out_msg.image = img_debug;
-        odom_viewer_.PublishOldAndNewAddedPointsInCurImg(out_msg.toImageMsg());
-      }
+      //   cv_bridge::CvImage out_msg;
+      //   out_msg.header.stamp = ros::Time::now();
+      //   out_msg.encoding = sensor_msgs::image_encodings::BGR8;
+      //   out_msg.image = img_debug;
+      //   odom_viewer_.PublishOldAndNewAddedPointsInCurImg(out_msg.toImageMsg());
+      // }
     }
 
     /// [8] visualize tf in rviz

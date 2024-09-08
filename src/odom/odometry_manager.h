@@ -33,6 +33,7 @@
 #include <thread>
 
 #include <camera/r3live.hpp>
+#include <ncnn_node/ncnn_image.hpp>
 
 namespace cocolic
 {
@@ -107,6 +108,32 @@ namespace cocolic
       return std::max(gyro_density, acce_density);
     };
 
+    inline float pointDistance(Eigen::Vector3f p)
+    {
+        return sqrt(p(0)*p(0) + p(1)*p(1) + p(2)*p(2));
+    }
+
+    inline void getColor(float p, float np, float&r, float&g, float&b) 
+    {
+            float inc = 6.0 / np;
+            float x = p * inc;
+            r = 0.0f; g = 0.0f; b = 0.0f;
+            if ((0 <= x && x <= 1) || (5 <= x && x <= 6)) r = 1.0f;
+            else if (4 <= x && x <= 5) r = x - 4;
+            else if (1 <= x && x <= 2) r = 1.0f - (x - 1);
+
+            if (1 <= x && x <= 3) g = 1.0f;
+            else if (0 <= x && x <= 1) g = x - 0;
+            else if (3 <= x && x <= 4) g = 1.0f - (x - 3);
+
+            if (3 <= x && x <= 5) b = 1.0f;
+            else if (2 <= x && x <= 3) b = x - 2;
+            else if (5 <= x && x <= 6) b = 1.0f - (x - 5);
+            r *= 255.0;
+            g *= 255.0;
+            b *= 255.0;
+    }
+
   protected:
     bool CreateCacheFolder(const std::string &config_path,
                            const std::string &bag_path);
@@ -143,6 +170,7 @@ namespace cocolic
     LidarHandler::Ptr lidar_handler_;
 
     R3LIVE::Ptr camera_handler_;
+    ncnn_image ncnn_handler_;
 
     int64_t t_begin_add_cam_; // 
 

@@ -37,8 +37,9 @@ Livox:  # Avia
 
 ### Odometry ###
 use_corner_feature: false
+use_ivox: true
 current_scan_param:
-    corner_leaf_size: 0.2
+    corner_leaf_size: 0.5
     surface_leaf_size: 0.5
     edge_min_valid_num: 10
     surf_min_valid_num: 100
