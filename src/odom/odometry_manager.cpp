@@ -417,7 +417,7 @@ namespace cocolic
         for (auto it = map_rgb_pts_in_last_frame_pos.begin(); it != map_rgb_pts_in_last_frame_pos.end(); it++)
         {
           RGB_pts *rgb_pt = ((RGB_pts *)it->first);
-            cv::circle(img_debug, it->second, 2, cv::Scalar(0, 255, 0), 2, 8);  // optical flow + ransac *2 -> 2d association（green）
+            cv::circle(img_debug, it->second, 2, cv::Scalar(255, 0, 255), 3, 8);  // optical flow + ransac *2 -> 2d association（green）
             VPoint temp_map;
             temp_map.x = rgb_pt->get_pos()(0, 0);
             temp_map.y = rgb_pt->get_pos()(1, 0);
@@ -443,7 +443,6 @@ namespace cocolic
     lidar_handler_->GetLoamFeatureAssociation();
     for (int iter = 0; iter < lidar_iter_; ++iter)
     {
-      
       if (process_image)
       {
         trajectory_manager_->UpdateTrajectoryWithLIC(
@@ -458,58 +457,77 @@ namespace cocolic
         trajectory_manager_->SetProcessCurImg(false);
       }
     }
+    
     PublishCloudAndTrajectory();
 
     /// [6] update visual global map
     PosCloud::Ptr cloud_undistort = PosCloud::Ptr(new PosCloud);
     auto latest_feature_before_active_time = lidar_handler_->GetFeatureCurrent(); // feature_cur_
     PosCloud::Ptr cloud_distort = latest_feature_before_active_time.surface_features;// feature_cur_.surface_features
-    // update localmap in ikdtree
-    double t0 = omp_get_wtime();
-    if(lidar_handler_->use_ivox_)
-    {  lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp,true); //ivox
-    }else lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp);//ikdtree
-    double t1 = omp_get_wtime();
-    std::cout << "Update ikdtree : " << (t1 - t0) * 1000 << " ms" << std::endl;
     if (cloud_distort->size() != 0)
     {
       trajectory_->UndistortScanInG(*cloud_distort, latest_feature_before_active_time.timestamp, *cloud_undistort);
       camera_handler_->UpdateVisualGlobalMap(cloud_undistort, latest_feature_before_active_time.time_max * NS_TO_S);
     }
 
-    /// [7] associate new map points for the current image frame
+     // use feature_cur_ds_ to update localmap in ikdtree
+    double t0 = omp_get_wtime();
+    if(lidar_handler_->use_ivox_)
+    {  
+      lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp,true); //ivox
+    }
+    else lidar_handler_->localmap_incremental(latest_feature_before_active_time.timestamp);//ikdtree
+    double t1 = omp_get_wtime();
+    std::cout << "Update ikdtree : " << (t1 - t0) * 1000 << " ms" << std::endl;
+    
+    /// [7] associate new map points（cloud_undistort） for the current image frame
     if (process_image)
     {
       SE3d Twc = trajectory_->GetCameraPoseNURBS(msg.image_timestamp);
       camera_handler_->AssociateNewPointsToCurrentImg(Twc.unit_quaternion(), Twc.translation());
-      
-      cv::Mat img_debug = camera_handler_->img_pose_->m_img.clone();
-      if (odom_viewer_.pub_undistort_scan_in_cur_img_.getNumSubscribers() != 0)
-      {
+      // if (odom_viewer_.pub_undistort_scan_in_cur_img_.getNumSubscribers() != 0)
+      // {
+        cv::Mat img_debug = camera_handler_->img_pose_->m_img.clone();
+        ColorPointCloud color_cloud;
+        cv::Mat rgb_img;
+        rgb_img = img_debug.clone();
+        for (int i = 0; i < cloud_undistort->points.size(); i++)
         {
-          for (int i = 0; i < cloud_undistort->points.size(); i++)
-          {
-            auto pt = cloud_undistort->points[i];
-            Eigen::Vector3d pt_e(pt.x, pt.y, pt.z);
-            Eigen::Matrix3d Rwc = Twc.unit_quaternion().toRotationMatrix();
-            Eigen::Vector3d twc = Twc.translation();
-            Eigen::Vector3d pt_cam = Rwc.transpose() * pt_e - Rwc.transpose() * twc;
-            double X = pt_cam.x(), Y = pt_cam.y(), Z = pt_cam.z();
-            cv::Point2f pix(K_(0, 0) * X / Z + K_(0, 2), K_(1, 1) * Y / Z + K_(1, 2));
-            Eigen::Vector3f p_(cloud_undistort->points[i].x,cloud_undistort->points[i].y,cloud_undistort->points[i].z);
-            float dist = pointDistance(p_);
-            float r,g,b;
-            getColor(dist,100,r,g,b);
-            cv::circle(img_debug, pix, 2, cv::Scalar(r,g, b), 3, 8);
-          }
+          ColorPoint colorpt;
+          auto pt = cloud_undistort->points[i];
+          Eigen::Vector3d pt_e(pt.x, pt.y, pt.z);
+          Eigen::Matrix3d Rwc = Twc.unit_quaternion().toRotationMatrix();
+          Eigen::Vector3d twc = Twc.translation();
+          Eigen::Vector3d pt_cam = Rwc.transpose() * pt_e - Rwc.transpose() * twc;
+          // Eigen::Vector3d pixel = K_ * pt_cam;  // pt_in_world derived from pt_in_lidar using current pose, pt_in_world transform to pt_in_cam
+          // cv::Point2f pix;
+          // pix.x = (pixel(0) / pixel(2));
+          // pix.y = (pixel(1) / pixel(2));
+          double X = pt_cam.x(), Y = pt_cam.y(), Z = pt_cam.z();
+          cv::Point2f pix(K_(0, 0) * X / Z + K_(0, 2), K_(1, 1) * Y / Z + K_(1, 2));
+          
+          if(pt.x < 0 || pix.x < 0 || pix.y < 0 || pix.x > img_debug.cols || pix.y > img_debug.rows)
+              continue;  
+          colorpt.x = pt.x;colorpt.y = pt.y;colorpt.z = pt.z;
+          colorpt.r = rgb_img.at<cv::Vec3b>(pix.y,pix.x)[2];
+          colorpt.g = rgb_img.at<cv::Vec3b>(pix.y,pix.x)[1];
+          colorpt.b = rgb_img.at<cv::Vec3b>(pix.y,pix.x)[0];
+          color_cloud.push_back(colorpt);
+          Eigen::Vector3d pt_(cloud_distort->points[i].x, cloud_distort->points[i].y, cloud_distort->points[i].z);
+          float dist = pointDistance(pt_);
+          float r,g,b;
+          getColor(dist,50,r,g,b);
+          cv::circle(img_debug, pix, 2, cv::Scalar(r,g, b), 2, 8);
+        }
           cv_bridge::CvImage out_msg;
           out_msg.header.stamp = ros::Time::now();
           out_msg.encoding = sensor_msgs::image_encodings::BGR8;
           out_msg.image = img_debug;
           odom_viewer_.PublishUndistortScanInCurImg(out_msg.toImageMsg());
-        }
-      }
-
+          // publish colormap
+          odom_viewer_.PublishColorCloud(color_cloud);
+          
+    // }
       // if (odom_viewer_.pub_old_and_new_added_points_in_cur_img_.getNumSubscribers() != 0)
       // {
       //   cv::Mat img_debug = camera_handler_->img_pose_->m_img.clone();

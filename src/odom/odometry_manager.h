@@ -108,7 +108,7 @@ namespace cocolic
       return std::max(gyro_density, acce_density);
     };
 
-    inline float pointDistance(Eigen::Vector3f p)
+    inline float pointDistance(Eigen::Vector3d p)
     {
         return sqrt(p(0)*p(0) + p(1)*p(1) + p(2)*p(2));
     }

@@ -33,14 +33,14 @@ Livox:  # Avia
     surf_threshold: 0.1
     odometry_surface_leaf_size: 0.2
     min_distance: 1.0
-    max_distance: 450
+    max_distance: 300
 
 ### Odometry ###
 use_corner_feature: false
 use_ivox: true
 current_scan_param:
-    corner_leaf_size: 0.5
-    surface_leaf_size: 0.5
+    corner_leaf_size: 0.4
+    surface_leaf_size: 0.4
     edge_min_valid_num: 10
     surf_min_valid_num: 100
     correspondence_downsample: 2

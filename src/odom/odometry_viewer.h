@@ -69,6 +69,7 @@ namespace cocolic
     // PublishDenseCloud
     ros::Publisher pub_target_dense_cloud_;
     ros::Publisher pub_source_dense_cloud_;
+    ros::Publisher pub_color_cloud_;
 
     // PublishSplineTrajectory
     ros::Publisher pub_spline_trajectory_;
@@ -131,12 +132,15 @@ namespace cocolic
           nh.advertise<sensor_msgs::PointCloud2>("/lio/source_fea", 10);
       pub_map_corr_temp_cloud_ =
           nh.advertise<sensor_msgs::PointCloud2>("/liomap_corr_temp", 10);
+      
 
       // dense feature cloud
       pub_target_dense_cloud_ =
           nh.advertise<sensor_msgs::PointCloud2>("/lio/target_dense_cloud", 10);
       pub_source_dense_cloud_ =
           nh.advertise<sensor_msgs::PointCloud2>("/lio/source_dense_cloud", 10);
+      pub_color_cloud_ = 
+          nh.advertise<sensor_msgs::PointCloud2>("/lio/color_dense_cloud", 10);
 
       /// spline trajectory
       pub_spline_trajectory_ =
@@ -679,12 +683,12 @@ namespace cocolic
           (++skip % 20 == 0))
       {
         PosCloud target_cloud;
-        Eigen::Matrix4d tranform_matrix = Eigen::Matrix4d::Identity();
-        pcl::transformPointCloud(*target_feature.surface_features, target_cloud,
-                                 tranform_matrix);
+        // Eigen::Matrix4d tranform_matrix = Eigen::Matrix4d::Identity();
+        // pcl::transformPointCloud(*target_feature.surface_features, target_cloud,
+                                //  tranform_matrix);
 
         sensor_msgs::PointCloud2 target_msg;
-        pcl::toROSMsg(target_cloud, target_msg);
+        pcl::toROSMsg(*target_feature.surface_features, target_msg);
         target_msg.header.stamp = ros::Time::now();
         target_msg.header.frame_id = "map";
         pub_target_dense_cloud_.publish(target_msg);
@@ -749,6 +753,16 @@ namespace cocolic
         source_msg.header.frame_id = "map";
         pub_source_dense_cloud_.publish(source_msg);
       }
+    }
+    // publish colcor map
+    void PublishColorCloud(const ColorPointCloud &cloud)
+    {
+        std::cout << "Publish color map : " << cloud.points.size() << std::endl;      
+        sensor_msgs::PointCloud2 color_msg;
+        pcl::toROSMsg(cloud, color_msg);
+        color_msg.header.stamp = ros::Time::now();
+        color_msg.header.frame_id = "map";
+        pub_color_cloud_.publish(color_msg);
     }
 
     void ErrorStatistics(

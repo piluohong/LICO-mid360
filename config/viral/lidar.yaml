@@ -31,6 +31,7 @@ VLP16:  # in fact, it is Ouster in viral (VLP16 just denotes rotating lidar)
 
 ### Odometry ###
 use_corner_feature: false
+use_ivox: true 
 current_scan_param:
     corner_leaf_size: 0.2
     surface_leaf_size: 0.4

@@ -194,3 +194,8 @@ typedef pcl::PointCloud<PosePoint> PosePointCloud;
 typedef pcl::PointXYZRGB ColorPoint;
 typedef pcl::PointCloud<ColorPoint> ColorPointCloud;
 
+typedef pcl::PointXYZRGBNormal RGBPoint;
+typedef pcl::PointCloud<RGBPoint> RGBPointCloud;
+
+
+

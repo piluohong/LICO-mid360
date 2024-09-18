@@ -9,7 +9,7 @@ lidar_yaml: /lvisam/lidar.yaml
 imu_yaml: /lvisam/imu.yaml
 camera_yaml: /lvisam/camera.yaml
 
-bag_path: /mnt/e/hhh_datasets/handheld.bag # handheld.bag garden.bag
+bag_path: /mnt/f/hhh_datasets/test2.bag # handheld.bag garden.bag
 bag_start: 0.  # 播放数据起始偏移量
 bag_durr: -1   # 播放多少秒的数据
 

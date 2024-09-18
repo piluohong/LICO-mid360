@@ -9,7 +9,7 @@ lidar_yaml: /r3live/lidar.yaml
 imu_yaml: /r3live/imu.yaml
 camera_yaml: /r3live/camera.yaml
 
-bag_path: /mnt/f/hhh_datasets/hku_park_01.bag  # degenerate_seq_01.bag、degenerate_seq_02.bag、hku_campus_seq_00.bag
+bag_path: /mnt/f/hhh_datasets/hku_main_building.bag  # degenerate_seq_01.bag、degenerate_seq_02.bag、hku_campus_seq_00.bag
 bag_start: 0.
 bag_durr: -1
 
@@ -23,7 +23,7 @@ division_coarse: 1  # if it is uniform, decide how many control points to place 
 
 ### OptimizationParams ###
 t_begin_add_cam: 5.0  # [s] visual constraints will be added after the system has been successfully initialized for a while
-lidar_iter: 1
+lidar_iter: 1 # 2: LICO
 use_lidar_scale: true  # scale the lidar weight
 lidar_weight: 500.0
 image_weight: 4.0

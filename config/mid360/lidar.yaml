@@ -13,9 +13,9 @@ lidar_timestamp_end: false  # if the timestamp of a lidar scan is set at the end
 ### FeatureExtraction ###
 Livox:  # mid360
     n_scan: 4
-    blind: 1.5
+    blind: 1.0
     group_size: 8
-    point_filter_num: 2
+    point_filter_num: 1
     inf_bound: 4
     disA: 0.01
     disB: 0.1

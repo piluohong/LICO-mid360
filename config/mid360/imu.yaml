@@ -4,7 +4,7 @@ imu_excite_threshold: 0.6  # statical initialization, do not move!s
 gravity_mag: 9.8
 if_normalized: true  # imu acc is normalized in FAST-LIVO dataset
 if_use_init_bg: false
-window_length: 3 # s
+window_length: 2 # s
 
 IMUExtrinsics:  # imu to imu
     time_offset: 0.000
