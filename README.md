@@ -4,7 +4,9 @@
 * Added rosbag function;
 * Added ikd-tree and ivox to manage local-map.
 * fixed bug with velodyne lidar (for m2dgr)
-* improve code structure## Experiments
+* improve code structure
+
+## Experiments
 
 ### 华南农业大学华山区（西湖）
 
@@ -52,19 +54,18 @@ cd ~/catkin_ws/src/Coco-LIC && mkdir data
 
 + Download [R3LIVE dataset](https://github.com/ziv-lin/r3live_dataset) or [FAST-LIVO dataset](https://connecthkuhk-my.sharepoint.com/personal/zhengcr_connect_hku_hk/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fzhengcr%5Fconnect%5Fhku%5Fhk%2FDocuments%2FFAST%2DLIVO%2DDatasets&ga=1) or [NTU-VIRAL dataset](https://ntu-aris.github.io/ntu_viral_dataset/) or [LVI-SAM dataset](https://drive.google.com/drive/folders/1q2NZnsgNmezFemoxhHnrDnp1JV_bqrgV).
 + Configure parameters in the `config/ct_odometry_xxx.yaml` file.
-  
+
   - `log_path`: the path to log
   - `config_path`: the path of `config` folder
   - `bag_path`: the file path of rosbag
 + Run on R3LIVE dataset for example.
-  
+
   ```shell
   roslaunch cocolic odometry.launch config_path:=config/ct_odometry_r3live.yaml
   ```
-  
+
   The estimated trajectory is saved in the folder `./src/Coco-LIC/data`.
 
 ## Acknowledgement
 
 Thanks for Coco-LIC, LIO-SAM, FAST-LIO2 && Faster-LIO
-
