@@ -20,8 +20,8 @@
 
 ### M2DGR（street_04）
 
-<img src="figure/大论文/6.png" width="60%" alt="" />
-<img src="figure/大论文/7.png" width="60%" alt="" />
+<img src="figure/大论文/6.jpg" width="60%" alt="" />
+<img src="figure/大论文/7.jpg" width="60%" alt="" />
 <img src="figure/大论文/8.png" width="60%" alt="" />
 
 ## Prerequisites
