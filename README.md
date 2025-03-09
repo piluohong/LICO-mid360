@@ -28,7 +28,7 @@
 + Ceres 2.0.0
 + OpenCV 4
 + PCL >= 1.13
-+ [livox_ros_driver](https://github.com/Livox-SDK/livox_ros_driver)
++ [livox_ros_driver2](https://github.com/Livox-SDK2/livox_ros_driver2)
 + yaml-cpp
 
 ## Install
