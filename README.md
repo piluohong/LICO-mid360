@@ -10,17 +10,19 @@
 
 ### 华南农业大学华山区（西湖）
 
-![1741510189339](images/README/1741510189339.png)
-![1741510204351](images/README/1741510204351.png)
-![1741510211341](images/README/1741510211341.png)
-![1741510230250](images/README/1741510230250.png)
-![1741510236292](images/README/1741510236292.png)
-![1741510241647](images/README/1741510241647.png)
-![1741510247526](images/README/1741510247526.png)
+<p>
+<img src="figure/大论文/1.png" width="60%" alt="" />
+<img src="figure/大论文/2.png" width="60%" alt="" />
+<img src="figure/大论文/3.png" width="60%" alt="" />
+<img src="figure/大论文/4.png" width="60%" alt="" />
+<img src="figure/大论文/5.png" width="60%" alt="" />
+</p>
 
 ### M2DGR（street_04）
 
-![1741510318294](images/README/1741510318294.png)
+<img src="figure/大论文/6.png" width="60%" alt="" />
+<img src="figure/大论文/7.png" width="60%" alt="" />
+<img src="figure/大论文/8.png" width="60%" alt="" />
 
 ## Prerequisites
 
