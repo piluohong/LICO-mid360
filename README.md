@@ -7,9 +7,7 @@
 * improve code structure
 
 ## Experiments
-
 ### SCAU（西湖）
-
 <p>
 <img src="figure/大论文/1.png" width="60%" alt="" />
 <img src="figure/大论文/2.png" width="60%" alt="" />
@@ -20,8 +18,9 @@
 <img src="figure/大论文/7.jpg" width="60%" alt="" />
 </p>
 ### M2DGR（street_04）
+<p>
 <img src="figure/大论文/8.png" width="60%" alt="" />
-
+</p>
 ## Prerequisites
 
 + ROS（tested with noetic）
