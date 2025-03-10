@@ -42,7 +42,7 @@ cd ~/catkin_ws/src
 git clone https://github.com/piluohong/LICO-mid360.git
 cd ~/catkin_ws && catkin_make
 source ~/catkin_ws/devel/setup.bash
-cd ~/catkin_ws/src/Coco-LIC && mkdir data
+cd ~/catkin_ws/src/LICO-mid360 && mkdir data
 ```
 
 ## Noted
