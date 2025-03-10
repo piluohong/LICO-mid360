@@ -67,4 +67,4 @@ cd ~/catkin_ws/src/LICO-mid360 && mkdir data
 
 ## Acknowledgement
 
-Thanks for Coco-LIC, LIO-SAM, FAST-LIO2 && Faster-LIO
+Thanks for Clic, Coco-LIC, LIO-SAM, FAST-LIO2 && Faster-LIO
