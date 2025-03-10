@@ -60,10 +60,10 @@ cd ~/catkin_ws/src/LICO-mid360 && mkdir data
 + Run on R3LIVE dataset for example.
 
   ```shell
-  roslaunch cocolic odometry.launch config_path:=config/ct_odometry_r3live.yaml
+  roslaunch cocolic odometry.launch config_path:=config/ct_odometry_mid360.yaml
   ```
 
-  The estimated trajectory is saved in the folder `./src/Coco-LIC/data`.
+  The estimated trajectory is saved in the folder `./src/LICO-mi360/data`.
 
 ## Acknowledgement
 
