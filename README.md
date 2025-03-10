@@ -47,7 +47,7 @@ cd ~/catkin_ws/src/LICO-mid360 && mkdir data
 
 ## Noted
 
-+ pcl >= 1.13 has some bugs with pcl-1.10, we suggested build pcl>=1.13 separtely.
++ pcl >= 1.13 has some bugs with ROS's pcl-1.10, we suggested build && install pcl>=1.13 separtely.
 
 ## Run
 
