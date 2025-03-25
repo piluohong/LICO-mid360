@@ -16,12 +16,14 @@
 <img src="figure/大论文/5.png" width="60%" alt="" />
 <img src="figure/大论文/6.jpg" width="60%" alt="" />
 <img src="figure/大论文/7.jpg" width="60%" alt="" />
+<img src="figure/大论文/8.png" width="60%" alt="" />
+</p>
+
 </p>
 * M2DGR（street_04）https://github.com/SJTU-ViSYS/M2DGR.
 * Self-cloectted https://pan.baidu.com/s/1YahU7u8-3T5BDjfClTsyVA 提取码: hhwy 
 <p>
-<img src="figure/大论文/8.png" width="60%" alt="" />
-</p>
+
 ## Prerequisites
 
 + ROS（tested with noetic）
