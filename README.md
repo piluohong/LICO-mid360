@@ -6,9 +6,10 @@
 * fixed bug with velodyne lidar (for m2dgr)
 * improve code structure
 
-## Experiments
-* Startup
+## Startup
 <img src="figure/大论文/9.png" width="90%" alt="" />
+
+## Experiments
 * SCAU（西湖）
 <p>
 <img src="figure/大论文/1.png" width="60%" alt="" />
