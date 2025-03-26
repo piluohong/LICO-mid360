@@ -8,9 +8,8 @@
 
 ## Experiments
 * Startup
-  <p>
-    <img src="figure/大论文/9.png" width="100%" alt="" />
-  </p>
+<img src="figure/大论文/9.png" width="100%" alt="" />
+  
 * SCAU（西湖）
 <p>
 <img src="figure/大论文/1.png" width="60%" alt="" />
