@@ -7,7 +7,7 @@
 * improve code structure
 
 ## Platform
-<img src="figure/大论文/9.png" width="100%" alt="" />
+<img src="figure/大论文/9.png" width="60%" alt="" />
 
 ## Experiments
 * SCAU（西湖）
@@ -46,10 +46,10 @@ cd ~/catkin_ws/src
 git clone https://github.com/Livox-SDK/livox_ros_driver2.git
 cd ~/catkin_ws && catkin_make
 cd ~/catkin_ws/src
-git clone https://github.com/piluohong/LICO-mid3100.git
+git clone https://github.com/piluohong/LICO-mid360.git
 cd ~/catkin_ws && catkin_make
 source ~/catkin_ws/devel/setup.bash
-cd ~/catkin_ws/src/LICO-mid3100 && mkdir data
+cd ~/catkin_ws/src/LICO-mid360 && mkdir data
 ```
 
 ## Noted
@@ -70,7 +70,7 @@ cd ~/catkin_ws/src/LICO-mid3100 && mkdir data
   roslaunch cocolic odometry.launch config_path:=config/ct_odometry_mid360.yaml
   ```
 
-  The estimated trajectory is saved in the folder `./src/LICO-mi3100/data`.
+  The estimated trajectory is saved in the folder `./src/LICO-mi360/data`.
 
 ## Acknowledgement
 
