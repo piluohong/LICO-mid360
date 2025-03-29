@@ -6,7 +6,7 @@
 * fixed bug with velodyne lidar (for m2dgr)
 * improve code structure
 
-## Startup
+## Platform
 <img src="figure/大论文/9.png" width="90%" alt="" />
 
 ## Experiments
@@ -36,6 +36,7 @@
 + PCL >= 1.13
 + [livox_ros_driver2](https://github.com/Livox-SDK2/livox_ros_driver2)
 + yaml-cpp
++ gtsam 4.0.3
 
 ## Install
 
