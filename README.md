@@ -12,14 +12,14 @@
 ## Experiments
 * SCAU（西湖）
 <p>
-<img src="figure/大论文/1.png" width="100%" alt="" />
-<img src="figure/大论文/2.png" width="100%" alt="" />
-<img src="figure/大论文/3.png" width="100%" alt="" />
-<img src="figure/大论文/4.png" width="100%" alt="" />
-<img src="figure/大论文/5.png" width="100%" alt="" />
-<img src="figure/大论文/6.jpg" width="100%" alt="" />
-<img src="figure/大论文/7.jpg" width="100%" alt="" />
-<img src="figure/大论文/8.png" width="100%" alt="" />
+<img src="figure/大论文/1.png" width="80%" alt="" />
+<img src="figure/大论文/2.png" width="80%" alt="" />
+<img src="figure/大论文/3.png" width="80%" alt="" />
+<img src="figure/大论文/4.png" width="80%" alt="" />
+<img src="figure/大论文/5.png" width="80%" alt="" />
+<img src="figure/大论文/6.jpg" width="80%" alt="" />
+<img src="figure/大论文/7.jpg" width="80%" alt="" />
+<img src="figure/大论文/8.png" width="80%" alt="" />
 </p>
 
 </p>
