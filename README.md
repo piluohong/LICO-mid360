@@ -1,4 +1,4 @@
-# LICO-mid3100 using for mid3100, it's derived from Coco-LIC.
+# LICO-mid360 using for mid360, it's derived from Coco-LIC.
 
 * Now there has some imrpoved things:
 * Added rosbag function;
@@ -64,10 +64,10 @@ cd ~/catkin_ws/src/LICO-mid3100 && mkdir data
   - `log_path`: the path to log
   - `config_path`: the path of `config` folder
   - `bag_path`: the file path of rosbag
-+ Run on R3LIVE dataset for example.
++ Run on mid360 dataset for example.
 
   ```shell
-  roslaunch cocolic odometry.launch config_path:=config/ct_odometry_mid3100.yaml
+  roslaunch cocolic odometry.launch config_path:=config/ct_odometry_mid360.yaml
   ```
 
   The estimated trajectory is saved in the folder `./src/LICO-mi3100/data`.
