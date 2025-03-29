@@ -1,4 +1,4 @@
-# LICO-mid360 using for mid360, it's derived from Coco-LIC.
+# LICO-mid3100 using for mid3100, it's derived from Coco-LIC.
 
 * Now there has some imrpoved things:
 * Added rosbag function;
@@ -7,19 +7,19 @@
 * improve code structure
 
 ## Platform
-<img src="figure/大论文/9.png" width="90%" alt="" />
+<img src="figure/大论文/9.png" width="100%" alt="" />
 
 ## Experiments
 * SCAU（西湖）
 <p>
-<img src="figure/大论文/1.png" width="60%" alt="" />
-<img src="figure/大论文/2.png" width="60%" alt="" />
-<img src="figure/大论文/3.png" width="60%" alt="" />
-<img src="figure/大论文/4.png" width="60%" alt="" />
-<img src="figure/大论文/5.png" width="60%" alt="" />
-<img src="figure/大论文/6.jpg" width="60%" alt="" />
-<img src="figure/大论文/7.jpg" width="60%" alt="" />
-<img src="figure/大论文/8.png" width="60%" alt="" />
+<img src="figure/大论文/1.png" width="100%" alt="" />
+<img src="figure/大论文/2.png" width="100%" alt="" />
+<img src="figure/大论文/3.png" width="100%" alt="" />
+<img src="figure/大论文/4.png" width="100%" alt="" />
+<img src="figure/大论文/5.png" width="100%" alt="" />
+<img src="figure/大论文/6.jpg" width="100%" alt="" />
+<img src="figure/大论文/7.jpg" width="100%" alt="" />
+<img src="figure/大论文/8.png" width="100%" alt="" />
 </p>
 
 </p>
@@ -46,10 +46,10 @@ cd ~/catkin_ws/src
 git clone https://github.com/Livox-SDK/livox_ros_driver2.git
 cd ~/catkin_ws && catkin_make
 cd ~/catkin_ws/src
-git clone https://github.com/piluohong/LICO-mid360.git
+git clone https://github.com/piluohong/LICO-mid3100.git
 cd ~/catkin_ws && catkin_make
 source ~/catkin_ws/devel/setup.bash
-cd ~/catkin_ws/src/LICO-mid360 && mkdir data
+cd ~/catkin_ws/src/LICO-mid3100 && mkdir data
 ```
 
 ## Noted
@@ -67,10 +67,10 @@ cd ~/catkin_ws/src/LICO-mid360 && mkdir data
 + Run on R3LIVE dataset for example.
 
   ```shell
-  roslaunch cocolic odometry.launch config_path:=config/ct_odometry_mid360.yaml
+  roslaunch cocolic odometry.launch config_path:=config/ct_odometry_mid3100.yaml
   ```
 
-  The estimated trajectory is saved in the folder `./src/LICO-mi360/data`.
+  The estimated trajectory is saved in the folder `./src/LICO-mi3100/data`.
 
 ## Acknowledgement
 
