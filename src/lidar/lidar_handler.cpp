@@ -144,7 +144,7 @@ namespace cocolic
     if (surface_feature->empty()) { ROS_WARN("surface_feature error\n");}
    
     pcl::RTPointCloudToPosCloud(surface_feature, feature_cur_.surface_features);
-    std::cout << "feature_cur_ :"<< feature_cur_.surface_features->size() << std::endl;
+    std::cout << "feature_cur_.surface_features_ :"<< feature_cur_.surface_features->size() << std::endl;
     if (raw_cloud->empty()) ROS_WARN("full_cloud error\n");
     pcl::RTPointCloudToPosCloud(raw_cloud, feature_cur_.full_cloud);
 
@@ -859,96 +859,96 @@ namespace cocolic
 
   void LidarHandler::ExtractSurroundFeatures(const int64_t cur_time)
   {
-    // assert(!cloud_key_pos_->points.empty() && "no key scan to build local map");
+    assert(!cloud_key_pos_->points.empty() && "no key scan to build local map");
 
-    // /// 经过距离阈值和时间阈值搜索得到的关键帧集合
-    // PosCloud::Ptr key_pos_selected(new PosCloud);
-    // GetNearDistKeyScanID(key_pos_selected);
-    // GetNearTimeKeyScanID(key_pos_selected, cur_time);
-    // LOG(INFO) << "[keysize] " << key_pos_selected->points.size();
+    /// 经过距离阈值和时间阈值搜索得到的关键帧集合
+    PosCloud::Ptr key_pos_selected(new PosCloud);
+    GetNearDistKeyScanID(key_pos_selected);
+    GetNearTimeKeyScanID(key_pos_selected, cur_time);
+    LOG(INFO) << "[keysize] " << key_pos_selected->points.size();
 
-    // int64_t target_time = cloud_key_pos_->back().timestamp; // 
-    // feature_map_.Clear();
-    // feature_map_.timestamp = target_time;
-    // // first pos
-    // if (local_feature_container_.size() == 1)
-    // { // 
-    //   int64_t kf_time = target_time;
+    int64_t target_time = cloud_key_pos_->back().timestamp; // 
+    feature_map_.Clear();
+    feature_map_.timestamp = target_time;
+    // first pos
+    if (local_feature_container_.size() == 1)
+    { // 
+      int64_t kf_time = target_time;
 
-    //   SE3d pose_cur_to_G = trajectory_->GetLidarPoseNURBS(kf_time); // TG_Lcur
-    //   LiDARFeature lf_out;
-    //   TransformLiDARFeature(local_feature_container_[kf_time],
-    //                         pose_cur_to_G.matrix(), lf_out);
+      SE3d pose_cur_to_G = trajectory_->GetLidarPoseNURBS(kf_time); // TG_Lcur
+      LiDARFeature lf_out;
+      TransformLiDARFeature(local_feature_container_[kf_time],
+                            pose_cur_to_G.matrix(), lf_out);
 
-    //   if (use_corner_feature_)
-    //   {
-    //     *feature_map_.corner_features += *(lf_out.corner_features);
-    //   }
-    //   *feature_map_.surface_features += *(lf_out.surface_features);
-    //   if (update_full_cloud_)
-    //   {
-    //     *feature_map_.full_cloud += *(lf_out.full_cloud);
-    //   }
+      if (use_corner_feature_)
+      {
+        *feature_map_.corner_features += *(lf_out.corner_features);
+      }
+      *feature_map_.surface_features += *(lf_out.surface_features);
+      if (update_full_cloud_)
+      {
+        *feature_map_.full_cloud += *(lf_out.full_cloud);
+      }
       
-    // }
-    // else
-    // {
-    //   for (auto const &pos : key_pos_selected->points)
-    //   {
-    //     int64_t kf_time = pos.timestamp;
+    }
+    else
+    {
+      for (auto const &pos : key_pos_selected->points)
+      {
+        int64_t kf_time = pos.timestamp;
 
-    //     // 在存储关键帧的关联容器中按照筛选过的帧索引查找进行build local map
-    //     if (local_feature_container_.find(kf_time) !=
-    //         local_feature_container_.end())
-    //     {
-    //       SE3d pose_cur_to_G = trajectory_->GetLidarPoseNURBS(kf_time); // TG_Lcur  //TODO：
-    //       LiDARFeature lf_out;
-    //       TransformLiDARFeature(local_feature_container_[kf_time],
-    //                             pose_cur_to_G.matrix(), lf_out);
+        // 在存储关键帧的关联容器中按照筛选过的帧索引查找进行build local map
+        if (local_feature_container_.find(kf_time) !=
+            local_feature_container_.end())
+        {
+          SE3d pose_cur_to_G = trajectory_->GetLidarPoseNURBS(kf_time); // TG_Lcur  //TODO：
+          LiDARFeature lf_out;
+          TransformLiDARFeature(local_feature_container_[kf_time],
+                                pose_cur_to_G.matrix(), lf_out);
 
-    //       if (use_corner_feature_)
-    //       {
-    //         *feature_map_.corner_features += *lf_out.corner_features;
-    //       }
+          if (use_corner_feature_)
+          {
+            *feature_map_.corner_features += *lf_out.corner_features;
+          }
 
-    //       *feature_map_.surface_features += *lf_out.surface_features;
+          *feature_map_.surface_features += *lf_out.surface_features;
 
-    //       if (update_full_cloud_)
-    //       {
-    //         *feature_map_.full_cloud += *lf_out.full_cloud;
-    //       }
-    //       // 更新特征图的时间信息
-    //       feature_map_.time_max =
-    //           std::max(feature_map_.time_max, lf_out.time_max);
-    //     }
-    //   }
-    // }
+          if (update_full_cloud_)
+          {
+            *feature_map_.full_cloud += *lf_out.full_cloud;
+          }
+          // 更新特征图的时间信息
+          feature_map_.time_max =
+              std::max(feature_map_.time_max, lf_out.time_max);
+        }
+      }
+    }
 
     
-    // if (feature_map_.surface_features->size() < 15000)
-    // {
-    //   feature_map_ds_.Clear();
-    //   feature_map_ds_ = feature_map_;
-    // }
-    // else
-    // {
-    //   DownsampleLiDARFeature(feature_map_, feature_map_ds_);
-    // }
-    // LOG(INFO) << "[feature_map_ds] "
-    //           << "surface cloud map : "
-    //           << feature_map_ds_.surface_features->size()
-    //           << "; cornor cloud map: " << feature_map_ds_.corner_features->size()
-    //           << "; feature map time : [" << feature_map_ds_.timestamp << ", "
-    //           << feature_map_ds_.time_max << "].";
+    if (feature_map_.surface_features->size() < 15000)
+    {
+      feature_map_ds_.Clear();
+      feature_map_ds_ = feature_map_;
+    }
+    else
+    {
+      DownsampleLiDARFeature(feature_map_, feature_map_ds_);
+    }
+    LOG(INFO) << "[feature_map_ds] "
+              << "surface cloud map : "
+              << feature_map_ds_.surface_features->size()
+              << "; cornor cloud map: " << feature_map_ds_.corner_features->size()
+              << "; feature map time : [" << feature_map_ds_.timestamp << ", "
+              << feature_map_ds_.time_max << "].";
     
-    std::cout << "feature_cur_ds_ :"<<feature_cur_ds_.surface_features->size() << std::endl;
+    // std::cout << "feature_cur_ds_ :"<<feature_cur_ds_.surface_features->size() << std::endl;
     double t0 = omp_get_wtime();
-    SetTargetMap(feature_cur_ds_);
+    SetTargetMap(feature_map_ds_);
     double t1 = omp_get_wtime();
-    std::cout << "Build kdtree : " << (t1 - t0) * 1000 << " ms" << std::endl;
+    std::cout << "Build local map : " << (t1 - t0) * 1000 << " ms" << std::endl;
  
   }
-//use ikd-tree
+//use ikd-tree or ivox
   void LidarHandler::SetTargetMap(const LiDARFeature &feature_map)
   {
     assert(!feature_map.surface_features->empty() &&
@@ -1118,7 +1118,7 @@ namespace cocolic
       if (lf_cur.surface_features->points[i].timestamp < 0)
         continue;
       
-      // 查找每个面点在特征图中对应的周围五个点
+      // 查找每个点在局部地图中对应的最近五个点
       PosPoint point_inM = lf_cur_in_M.surface_features->points[i];
       
       std::vector<int> k_indices;
@@ -1142,7 +1142,7 @@ namespace cocolic
 
       // 距离阈值判断是否为有效点
       bool effect_pt = true;
-      if (use_ivox_)
+      if (use_ivox_ && !first_initial_ikdtree)
       {
         for (auto &p : points_near)
         {
@@ -1155,7 +1155,7 @@ namespace cocolic
         if (!effect_pt)
           continue;
       }else{
-        if (k_sqr_dists[4] > 1.0)
+        if (k_sqr_dists[4]  > 1.0)
           continue;
       }
 

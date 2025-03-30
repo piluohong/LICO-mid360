@@ -471,7 +471,8 @@ namespace cocolic
 
     PosCloud::Ptr cloud_undistort = PosCloud::Ptr(new PosCloud);
     auto latest_feature_before_active_time = lidar_handler_->GetFeatureCurrent(); // feature_cur_
-    PosCloud::Ptr cloud_distort = latest_feature_before_active_time.surface_features;// feature_cur_.surface_features
+    PosCloud::Ptr cloud_distort = latest_feature_before_active_time.full_cloud;// feature_cur_.full_cloud
+    // PosCloud::Ptr cloud_distort = latest_feature_before_active_time.surface_features;// feature_cur_.surfaces
     // ROS_WARN("3dEBUG\n");
 
     //publish odom
@@ -539,7 +540,7 @@ namespace cocolic
           float dist = pointDistance(pt_);
           float r,g,b;
           getColor(dist,50,r,g,b);
-          cv::circle(img_debug, pix, 2, cv::Scalar(r,g, b), 5, 8);
+          cv::circle(img_debug, pix, 5, cv::Scalar(r,g, b), 5, 8);
         }
           cv_bridge::CvImage out_msg;
           out_msg.header.stamp = ros::Time::now();

@@ -17,9 +17,9 @@ lidar_timestamp_end: false  # if the timestamp of a lidar scan is set at the end
 ### FeatureExtraction ###
 Livox:  # mid360
     n_scan: 4
-    blind: 0.5
+    blind: 1.0
     group_size: 8
-    point_filter_num: 1
+    point_filter_num: 4
     inf_bound: 4
     disA: 0.01
     disB: 0.1
@@ -42,10 +42,10 @@ Livox:  # mid360
 ### Odometry ###
 use_corner_feature: false
 use_ivox: true # ikdtree ivox 精度与特征子图的分辨率正相关
-ivox_filter_size_map_min: 0.
+ivox_filter_size_map_min: 0.5
 current_scan_param:
     corner_leaf_size: 0.2
-    surface_leaf_size: 0.4 #indoor 0.2
+    surface_leaf_size: 0.5 #indoor 0.2
     edge_min_valid_num: 10
     surf_min_valid_num: 200
     correspondence_downsample: 1

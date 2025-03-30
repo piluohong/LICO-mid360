@@ -246,7 +246,7 @@ namespace cocolic
     
     int plsize = lidar_msg->point_num;
     out_cloud->clear();
-    out_cloud->resize(plsize);
+    // out_cloud->resize(plsize);
     //  for (int i = 0; i < n_scan; i++)
     // {
     //   in_cloud_vec[i] = RTPointCloud::Ptr(new RTPointCloud());
@@ -262,23 +262,32 @@ namespace cocolic
       pt.ring  = lidar_msg->points[i].line;
       pt.intensity  = lidar_msg->points[i].reflectivity;
       pt.time  = int64_t(lidar_msg->points[i].offset_time); // ns
+
+      float d2 = pt.x * pt.x + pt.y * pt.y + pt.z * pt.z; 
+     if (d2 > (blind * blind))  
+     {
       p_full_cloud->points.push_back(pt);
-      out_cloud->points[i] = pt;
+     }
+      // out_cloud->points[i] = pt;
       if ((i % point_filter_num == 0)  && (lidar_msg->points[i].line < n_scan)
        && (!IS_VALID(lidar_msg->points[i].x)) && (!IS_VALID(lidar_msg->points[i].y)) && (!IS_VALID(lidar_msg->points[i].z)) && ((lidar_msg->points[i].tag & 0x03) == 0x00 || (lidar_msg->points[i].tag & 0x0C) == 0x00))
       {
-          if (((*p_full_cloud)[i].x * (*p_full_cloud)[i].x + (*p_full_cloud)[i].y * (*p_full_cloud)[i].y + (*p_full_cloud)[i].z * (*p_full_cloud)[i].z > (blind * blind))) //((abs((*p_full_cloud)[i].x - (*p_full_cloud)[i - 1].x) > 1e-7) || (abs((*p_full_cloud)[i].y - (*p_full_cloud)[i - 1].y) > 1e-7) || (abs((*p_full_cloud)[i].z - (*p_full_cloud)[i - 1].z) > 1e-7)) && 
-          {
+          if (d2 > (blind * blind))
             p_surface_cloud->points.push_back(pt);
             
             // in_cloud_vec[lidar_msg->points[i].line]->push_back((*p_full_cloud)[i]);
-          }
-      }
+        }
+      
       
     }
 
     p_corner_cloud->points.push_back(p_surface_cloud->points[0]);
-    
+    // out_cloud->resize(p_full_cloud->size());
+    // for (size_t i = 0; i < p_full_cloud->size();i++)
+    // {
+    //   out_cloud->points[i] =  p_full_cloud->points[i];
+    // }
+    *out_cloud = *p_full_cloud;
     // for (auto const &v : in_cloud_vec)
     // {
     //   *out_cloud += (*v);
