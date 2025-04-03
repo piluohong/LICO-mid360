@@ -2,7 +2,7 @@
  * @Author: piluohong 1912694135@qq.com
  * @Date: 2024-05-27 22:48:25
  * @LastEditors: piluohong 1912694135@qq.com
- * @LastEditTime: 2024-07-24 17:22:28
+ * @LastEditTime: 2025-04-03 20:18:54
  * @FilePath: /lvio/src/Coco-LIC-master/src/odometry_node.cpp
  * @Description: 
  * */
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
   std::string log_path = config_node["log_path"].as<std::string>();
   FLAGS_log_dir = log_path;
   FLAGS_colorlogtostderr = true;
-  std::cout << "\n🥥 Start Coco-LIC Odometry 🥥";
+  std::cout << "\n🥥 Start LICO(mid360) Odometry 🥥";
 
   OdometryManager odom_manager(config_node, nh);// 初始化數據讀入
   MODE mode = MODE(config_node["mode"].as<int>());
