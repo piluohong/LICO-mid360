@@ -2,7 +2,7 @@
  * @Author: piluohong 1912694135@qq.com
  * @Date: 2024-05-27 22:48:25
  * @LastEditors: piluohong 1912694135@qq.com
- * @LastEditTime: 2025-04-03 20:18:54
+ * @LastEditTime: 2025-04-04 21:06:13
  * @FilePath: /lvio/src/Coco-LIC-master/src/odometry_node.cpp
  * @Description: 
  * */
@@ -29,6 +29,7 @@
 #include <ros/package.h>
 #include <ros/ros.h>
 #include <odom/odometry_manager.h>
+#include <ground_seg/gpf.hpp>
 
 using namespace cocolic;
 
@@ -59,9 +60,11 @@ int main(int argc, char **argv) {
   OdometryManager odom_manager(config_node, nh);// 初始化數據讀入
   MODE mode = MODE(config_node["mode"].as<int>());
   
+ 
   signal(SIGINT, SigHandle);
   if (MODE::Odometry_Offline == mode) {
     // float t0 = omp_get_wtime();
+    
     odom_manager.RunBag();
     // float t1 = omp_get_wtime();
     // odom_manager.time_vec.push_back(t1-t0);
@@ -69,6 +72,7 @@ int main(int argc, char **argv) {
   {
       
       ros::Rate rate(5000);
+       GroundSegmentationNode segnode(nh);
       // std::cout  << "RunInSubscribeMode ...\n.";
       while(ros::ok()){
         if (flg_exit) {
@@ -82,9 +86,9 @@ int main(int argc, char **argv) {
         rate.sleep();
     }
   }
-  // odom_manager.saveGlobalmap();
-  odom_manager.savekntsNum("/home/hyq/slam/lvio/src/LICO-mid360-main/data/adaptive_kntsNum.txt");
-  odom_manager.saveCosttime("/home/hyq/slam/lvio/src/LICO-mid360-main/data/adaptive_timecost.txt");
+  odom_manager.saveGlobalmap();
+  // odom_manager.savekntsNum("/home/hyq/slam/lvio/src/LICO-mid360-main/data/adaptive_kntsNum.txt");
+  // odom_manager.saveCosttime("/home/hyq/slam/lvio/src/LICO-mid360-main/data/adaptive_timecost.txt");
   // double t_traj_max = odom_manager.SaveOdometry();
   auto s_vec = odom_manager.pose_final.front().translation();
   auto e_vec = odom_manager.pose_final.back().translation();

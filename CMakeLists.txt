@@ -13,10 +13,18 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+file(GLOB_RECURSE OLD_OPENCV "/usr/lib/x86_64-linux-gnu/libopencv*")
+list(REMOVE_ITEM catkin_LIBRARIES ${OLD_OPENCV})
+
+
+include_directories("/home/h/ku/pcl-1.14-installpath/include/pcl-1.14") #pcl-1.13 与 自带的pcl-1.10冲突，使用该指令
+set(PCL_DIR "/home/h/ku/pcl-1.14-installpath/share/pcl-1.14")
+set(Ceres_DIR "/home/h/ku/ceres-2.0.0-installpath/lib/cmake")
+set(OpenCV_DIR "/home/h/ku/opencv-4.5.3/build")
+set(cv_bridge_DIR "/home/h/ku/catkin_cv_bridge/devel/share/cv_bridge/cmake")
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  rospy
   std_msgs
   sensor_msgs
   geometry_msgs
@@ -39,21 +47,15 @@ if(Boost_FOUND)
 	LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 endif()
 
-include_directories("/home/hyq/slam/3rdku/pcl-1.14.0-installpath/include/pcl-1.14") #pcl-1.13 与 自带的pcl-1.10冲突，使用该指令
-set(PCL_DIR "/home/hyq/slam/3rdku/pcl-1.14.0-installpath/share/pcl-1.14")
-set(Ceres_DIR "/home/hyq/slam/3rdku/ceres-2.0.0-installpath/lib/cmake")
-# set(ncnn_DIR "/home/hyq/slam/3rdku/ncnn/build/install/lib/cmake/ncnn" CACHE PATH "Directory that contains ncnnConfig.cmake")
+
 
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
 # find_package(Sophus REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV  4 REQUIRED)
+find_package(GTSAM REQUIRED)
 # find_package(ncnn REQUIRED)
 # find_package(PCL 1.13.0 REQUIRED HINTS ${PCL_DIR})
-
-# LOOP
-find_package(OpenMP REQUIRED)
-find_package(GTSAM REQUIRED QUIET)
 
 # find_package(yaml-cpp REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -90,7 +92,8 @@ include_directories(
   # ${Sophus_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
-  ${GTSAM_INCLUDE_DIR} #loop
+  ${OpenCV_INCLUDE_DIRS}
+  ${GTSAM_INCLUDE_DIRS}
   # /usr/local/include/pcl-1.13
   src/camera
   src/camera/loam/include
@@ -99,21 +102,20 @@ include_directories(
 )
 
 link_directories(
-  # ${PCL_LIBRARY_DIRS}
-"/home/hyq/slam/3rdku/pcl-1.14.0-installpath/lib"
+   ${OpenCV_LIBRARY_DIRS}
+"/home/h/ku/pcl-1.14-installpath/lib"
 )
 
 list(APPEND thirdparty_libraries
         ${YAML_CPP_LIBRARIES}
         ${Boost_LIBRARIES}
         ${catkin_LIBRARIES}
-        ${OpenCV_LIBS}
+        ${OpenCV_LIBRARIES}
         ${CERES_LIBRARIES}
         # ${PCL_LIBRARIES}
         ${Boost_LIBRARIES}
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SERIALIZATION_LIBRARY} # serialization
-        # ${}
 )
 
 add_library(spline_lib src/spline/trajectory.cpp)
@@ -137,11 +139,11 @@ file(GLOB r3live_files
     "src/camera/optical_flow/*.cpp"
     "src/camera/rgb_map/*.cpp"
     "src/camera/*.cpp"
-    # "src/ncnn_node/ncnn_image.hpp"
+    "src/ncnn_node/ncnn_image.hpp"
     "include/tracking.cpp"
 )
 add_library(r3live_lib ${r3live_files})
-target_link_libraries(r3live_lib ${thirdparty_libraries})
+target_link_libraries(r3live_lib ${thirdparty_libraries}) #ncnn)
 
 add_executable(odometry_node 
    src/odometry_node.cpp
@@ -153,6 +155,7 @@ add_executable(odometry_node
    src/odom/odometry_manager.cpp
    src/odom/factor/analytic_diff/marginalization_factor.cpp
    src/utils/parameter_struct.cpp
+   include/ground_seg/gpf.hpp
 )
 target_link_libraries(odometry_node 
    spline_lib 
@@ -160,21 +163,19 @@ target_link_libraries(odometry_node
    r3live_lib
    ${thirdparty_libraries}
   #  fmt::fmt
-  "/home/hyq/slam/3rdku/pcl-1.14.0-installpath/lib"
+  "/home/h/ku/pcl-1.14-installpath/lib"
 )
 
-add_executable(alaserPGO 
-  src/PGO/laserPosegraphOpt.cpp
-  include/scancontext/Scancontext.cpp
-)
-target_link_libraries(alaserPGO 
-  ${catkin_LIBRARIES} ${CERES_LIBRARIES}
-  ${OpenMP_CXX_FLAGS}
-  lidar_lib
-  pcl_registration
-  "/home/hyq/slam/3rdku/pcl-1.14.0-installpath/lib"
-  gtsam
-)
+# add_executable(alaserPGO 
+#   src/PGO/laserPosegraphOpt.cpp
+#   include/scancontext/Scancontext.cpp
+# )
+# target_link_libraries(alaserPGO 
+#   ${catkin_LIBRARIES} ${CERES_LIBRARIES}
+#   ${OpenMP_CXX_FLAGS} lidar_lib
+#   "/home/h/ku/pcl-1.14-installpath/lib"
+#   gtsam
+# )
 
 #Ncnn
 
