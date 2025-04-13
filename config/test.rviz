@@ -5,16 +5,30 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /B-spline1
         - /B-spline1/Trajectory1
-        - /LiDARColorMap1
+        - /B-spline1/ControlPoint1
+        - /CurrentLiDARScan1
         - /CurrentLiDARScan1/Autocompute Value Bounds1
+        - /mapPointCloud1
         - /mapPointCloud1/Autocompute Value Bounds1
+        - /TrackedMapPoints3D1/Autocompute Value Bounds1
         - /TF1/Frames1
+        - /aft_pgo_path1
         - /Odometry1/Shape1
         - /Odometry2/Shape1
+        - /nogroundMap1/Autocompute Value Bounds1
+        - /groundMap1/Autocompute Value Bounds1
+        - /pathCloud1
+        - /pathCloud1/Autocompute Value Bounds1
+        - /livoxCloudFlat1/Autocompute Value Bounds1
+        - /livoxCloudPgoWithoutDeskew1
+        - /livoxCloudPgoWithoutDeskew1/Autocompute Value Bounds1
+        - /loop_scan1
+        - /loop_scan1/Autocompute Value Bounds1
+        - /loop_map1
+        - /loop_map1/Autocompute Value Bounds1
       Splitter Ratio: 0.5984405279159546
-    Tree Height: 893
+    Tree Height: 680
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -30,9 +44,10 @@ Panels:
     Name: Views
     Splitter Ratio: 0.5
   - Class: rviz/Time
+    Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LiDARColorMap
+    SyncSource: pathCloud
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -45,12 +60,12 @@ Visualization Manager:
         - Alpha: 1
           Buffer Length: 1
           Class: rviz/Path
-          Color: 85; 255; 255
+          Color: 255; 255; 0
           Enabled: false
           Head Diameter: 0.30000001192092896
           Head Length: 0.20000000298023224
           Length: 0.05000000074505806
-          Line Style: Lines
+          Line Style: Billboards
           Line Width: 0.20000000298023224
           Name: Trajectory
           Offset:
@@ -59,7 +74,6 @@ Visualization Manager:
             Z: 0
           Pose Color: 255; 85; 255
           Pose Style: None
-          Queue Size: 10
           Radius: 0.009999999776482582
           Shaft Diameter: 0.10000000149011612
           Shaft Length: 0.10000000149011612
@@ -94,9 +108,9 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: false
-      Enabled: true
+      Enabled: false
       Name: B-spline
-    - Alpha: 0.20000000298023224
+    - Alpha: 0.25
       Autocompute Intensity Bounds: false
       Autocompute Value Bounds:
         Max Value: 49.29526138305664
@@ -108,7 +122,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 3000
-      Enabled: true
+      Enabled: false
       Invert Rainbow: true
       Max Color: 255; 255; 255
       Max Intensity: 165
@@ -125,20 +139,20 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 2
-        Min Value: -1
+        Max Value: 10
+        Min Value: 2
         Value: false
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: AxisColor
+      Color Transformer: FlatColor
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -146,14 +160,14 @@ Visualization Manager:
       Position Transformer: XYZ
       Queue Size: 1000
       Selectable: true
-      Size (Pixels): 1
+      Size (Pixels): 2
       Size (m): 0.009999999776482582
       Style: Points
       Topic: /lio/source_dense_cloud
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Alpha: 0.10000000149011612
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -165,7 +179,7 @@ Visualization Manager:
       Class: rviz/PointCloud2
       Color: 255; 255; 255
       Color Transformer: AxisColor
-      Decay Time: 5000
+      Decay Time: 1000
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -185,8 +199,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
+        Max Value: 3.5408222675323486
+        Min Value: -6.860167026519775
         Value: true
       Axis: Z
       Channel Name: intensity
@@ -269,10 +283,9 @@ Visualization Manager:
       Frame Timeout: 10000
       Frames:
         All Enabled: false
-      Marker Alpha: 1
-      Marker Scale: 3
+      Marker Scale: 10
       Name: TF
-      Show Arrows: true
+      Show Arrows: false
       Show Axes: true
       Show Names: true
       Tree:
@@ -312,7 +325,7 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 0.05000000074505806
+      Line Width: 0.10000000149011612
       Name: aft_pgo_path
       Offset:
         X: 0
@@ -320,7 +333,6 @@ Visualization Manager:
         Z: 0
       Pose Color: 255; 85; 255
       Pose Style: None
-      Queue Size: 10
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
@@ -330,31 +342,31 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 24.998672485351562
-        Min Value: -3.2792234420776367
-        Value: true
+        Max Value: 10
+        Min Value: 2
+        Value: false
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: AxisColor
-      Decay Time: 0
-      Enabled: true
+      Color: 239; 41; 41
+      Color Transformer: FlatColor
+      Decay Time: 1000
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
-      Name: PointCloud2
+      Name: livoxCloudSharp
       Position Transformer: XYZ
       Queue Size: 10
       Selectable: true
       Size (Pixels): 1
       Size (m): 0.009999999776482582
       Style: Points
-      Topic: /aft_pgo_map
+      Topic: /laser_cloud_sharp
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -376,7 +388,6 @@ Visualization Manager:
       Keep: 1000
       Name: keyodom
       Position Tolerance: 0.10000000149011612
-      Queue Size: 10
       Shape:
         Alpha: 1
         Axes Length: 1
@@ -408,17 +419,16 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: false
-      Keep: 50
+      Keep: 1
       Name: Odometry
       Position Tolerance: 0.009999999776482582
-      Queue Size: 1
       Shape:
         Alpha: 1
         Axes Length: 1
         Axes Radius: 0.10000000149011612
         Color: 255; 255; 0
-        Head Length: 0.009999999776482582
-        Head Radius: 0.10000000149011612
+        Head Length: 0.5
+        Head Radius: 0.5
         Shaft Length: 0.10000000149011612
         Shaft Radius: 0.10000000149011612
         Value: Arrow
@@ -442,15 +452,14 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: false
+      Enabled: true
       Keep: 1
       Name: Odometry
       Position Tolerance: 0.009999999776482582
-      Queue Size: 1
       Shape:
         Alpha: 1
-        Axes Length: 50
-        Axes Radius: 0.5
+        Axes Length: 5
+        Axes Radius: 1
         Color: 255; 255; 0
         Head Length: 0.009999999776482582
         Head Radius: 0.10000000149011612
@@ -459,18 +468,202 @@ Visualization Manager:
         Value: Axes
       Topic: /lidarAndcameraOdom
       Unreliable: false
-      Value: false
-    - Class: rviz/Image
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: 2
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 0
+      Color Transformer: FlatColor
+      Decay Time: 1000
       Enabled: false
-      Image Topic: /camera/color/image_raw
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image
-      Normalize Range: true
-      Queue Size: 2
-      Transport Hint: compressed
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: nogroundMap
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 1
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /non_ground_cloud
       Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 0.30000001192092896
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: 2
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 25; 255; 255
+      Color Transformer: FlatColor
+      Decay Time: 100000
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: groundMap
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 1
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /ground_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 220.72706604003906
+        Min Value: -0.003004596335813403
+        Value: true
+      Axis: X
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 245; 5; 255
+      Color Transformer: AxisColor
+      Decay Time: 100000
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: pathCloud
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /lidar_path_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: 2
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 25; 255; 0
+      Color Transformer: FlatColor
+      Decay Time: 1000
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: livoxCloudFlat
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 1
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /laser_cloud_flat
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 0.5
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: 2
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: livoxCloudPgoWithoutDeskew
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 1
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /aft_pgo_map
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: 2
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 239; 41; 41
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: loop_scan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 2
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /loop_scan_local
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: 2
+        Value: false
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 82; 82; 248
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: loop_map
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 1
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /loop_submap_local
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
       Value: false
   Enabled: true
   Global Options:
@@ -499,31 +692,31 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 424.557861328125
+      Class: rviz/ThirdPersonFollower
+      Distance: 145.93026733398438
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Field of View: 0.7853981852531433
       Focal Point:
-        X: -56.754512786865234
-        Y: -0.8819573521614075
-        Z: -163.32867431640625
+        X: 143.14974975585938
+        Y: -11.784908294677734
+        Z: -6.74937629699707
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.109796166419983
+      Pitch: 1.4197964668273926
       Target Frame: map
-      Yaw: 4.460212707519531
+      Value: ThirdPersonFollower (rviz)
+      Yaw: 1.9357388019561768
     Saved: ~
 Window Geometry:
   Displays:
     collapsed: true
-  Height: 999
+  Height: 792
   Hide Left Dock: true
   Hide Right Dock: true
   Image:
@@ -532,7 +725,7 @@ Window Geometry:
     collapsed: false
   OldAndNewAddedPointsInCurImg:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd000000040000000000000156000003b8fc0200000017fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001fd00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730000000014000003b8000000c700fffffffb0000002a0069006d006100670065005f0066006500610074007500720065005f0074007200610063006b0065007200000002ce000001310000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001c00430075007200720065006e0074002000440065007000740068007301000003a5000000160000000000000000fb0000001a0074007200610063006b0065006400200069006d0061006700650100000389000000160000000000000000fb00000012007200610077005f0069006d0061006700650000000000ffffffff0000000000000000fb00000020006c006f006f0070005f006d0061007400630068005f0069006d00610067006501000003a5000000160000000000000000fb00000014004c006f006f007000200069006d0061006700650000000000ffffffff0000000000000000fb0000001a0049006d00610067006500200046006500610074007500720065010000038a000000160000000000000000fb000000160049006d0061006700650020004400650070007400680000000000ffffffff0000000000000000fb0000002a0069006d006100670065005f0066006500610074007500720065005f0074007200610063006b006500720100000287000001780000000000000000fb0000001200540065007300740049006d00610067006500000000e8000000cd0000000000000000fb000000100049006e0070007500740049006d0067000000023d000000790000001600fffffffb0000002a0055006e0064006900730074006f00720074005300630061006e0049006e0043007500720049006d006700000001ea000000cc0000001600fffffffb00000038004f006c00640041006e0064004e00650077004100640064006500640050006f0069006e007400730049006e0043007500720049006d00670000000333000000cc0000001600fffffffb0000000a0049006d006100670065000000023d000001110000001600fffffffb0000000a0049006d0061006700650000000322000000aa0000001600ffffff0000000100000236000003b8fc020000000ffb0000000a0049006d0061006700650000000014000003b80000001600fffffffb0000000a0049006d0061006700650000000229000001a30000000000000000fb0000000a0049006d0061006700650100000014000001d30000000000000000fb0000000a0049006d00610067006501000001ed000001df0000000000000000fc00000014000003b80000000000fffffffa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb0000000a0049006d00610067006501000005ff000001750000000000000000fc00000014000003b80000000000fffffffa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb0000000a0049006d00610067006501000005ff000001750000000000000000fc00000014000002a20000000000fffffffa000000000100000002fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000003a9000001750000000000000000fc00000014000002a20000000000fffffffa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb0000000a0049006d00610067006501000003a9000001750000000000000000fb0000000a0049006d0061006700650100000014000002a20000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0049006d00610067006501000000140000017b0000000000000000fc00000014000003b80000000000fffffffa000000000100000004fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb000000100054007200610063006b0049006d00670000000000ffffffff0000008400fffffffb0000000a0056006900650077007300000004910000010f0000010000fffffffb0000000a0049006d00610067006501000001a30000016b0000000000000000fb0000000a0049006d00610067006501000001ce000001400000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000160fc0100000003fb0000000a0049006d00610067006501000003b0000003d00000000000000000fb0000000800540069006d00650000000000000005320000035c00fffffffb0000000800540069006d0065010000000000000450000000000000000000000774000003b800000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000156000002e5fc0200000016fb0000001200530065006c0065006300740069006f006e000000003d0000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001fd00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730000000016000002e5000000c900fffffffb0000002a0069006d006100670065005f0066006500610074007500720065005f0074007200610063006b0065007200000002ce000001310000000000000000fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000001c00430075007200720065006e0074002000440065007000740068007301000003a5000000160000000000000000fb0000001a0074007200610063006b0065006400200069006d0061006700650100000389000000160000000000000000fb00000012007200610077005f0069006d0061006700650000000000ffffffff0000000000000000fb00000020006c006f006f0070005f006d0061007400630068005f0069006d00610067006501000003a5000000160000000000000000fb00000014004c006f006f007000200069006d0061006700650000000000ffffffff0000000000000000fb0000001a0049006d00610067006500200046006500610074007500720065010000038a000000160000000000000000fb000000160049006d0061006700650020004400650070007400680000000000ffffffff0000000000000000fb0000002a0069006d006100670065005f0066006500610074007500720065005f0074007200610063006b006500720100000287000001780000000000000000fb0000001200540065007300740049006d00610067006500000000e8000000cd0000000000000000fb000000100049006e0070007500740049006d0067000000023d000000790000001600fffffffb0000002a0055006e0064006900730074006f00720074005300630061006e0049006e0043007500720049006d006700000001ea000000cc0000001600fffffffb00000038004f006c00640041006e0064004e00650077004100640064006500640050006f0069006e007400730049006e0043007500720049006d00670000000333000000cc0000001600fffffffb0000000a0049006d0061006700650000000016000002760000001600ffffff0000000100000176000002e5fc020000000efb0000000a0049006d0061006700650000000229000001a30000001600fffffffb0000000a0049006d0061006700650100000014000001d30000000000000000fb0000000a0049006d00610067006501000001ed000001df0000000000000000fc00000014000003b80000000000fffffffa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb0000000a0049006d00610067006501000005ff000001750000000000000000fc00000014000003b80000000000fffffffa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb0000000a0049006d00610067006501000005ff000001750000000000000000fc00000014000002a20000000000fffffffa000000000100000002fb0000000a0049006d0061006700650000000000ffffffff0000000000000000fb0000000a0049006d00610067006500000003a9000001750000000000000000fc00000014000002a20000000000fffffffa000000000100000002fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb0000000a0049006d00610067006501000003a9000001750000000000000000fb0000000a0049006d0061006700650100000014000002a20000000000000000fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a0049006d00610067006501000000140000017b0000000000000000fc00000016000002e50000000000fffffffa000000000100000004fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb0000000a0049006d0061006700650100000000ffffffff0000000000000000fb000000100054007200610063006b0049006d00670000000000ffffffff0000007200fffffffb0000000a0056006900650077007300000004910000010f0000010000fffffffb0000000a0049006d00610067006501000001a30000016b0000000000000000fb0000000a0049006d00610067006501000001ce000001400000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000040000000199fc0100000003fb0000000a0049006d0061006700650100000000000001f00000000000000000fb0000000a0049006d00610067006501000001f60000020a0000000000000000fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000160fc0100000003fb0000000a0049006d00610067006501000003b0000003d00000000000000000fb0000000800540069006d0065000000000000000532000004f300fffffffb0000000800540069006d0065010000000000000450000000000000000000000400000002e500000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -545,6 +738,6 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: true
-  Width: 1908
-  X: -32
-  Y: 477
+  Width: 1024
+  X: 0
+  Y: 180

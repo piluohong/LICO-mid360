@@ -3,14 +3,14 @@ lidar0:
     is_livox: true
     Extrinsics:  # lidar to imu:n100
         time_offset: 0.0
-        # Trans: [0.025325, 0.052099, 0.068090] #T1
-        # Rot:  [ 0.904961, 0.005940, 0.425453,
-        #        -0.009338, 0.999939, 0.005902,
-        #        -0.425392, -0.009314, 0.904961]
-        Trans: [-0.011,-0.02329,0.04412] # /livox/imu # T4 
-        Rot:  [ 1,0,0,
-                0,1,0,
-                0,0,1]
+        Trans: [0.025325, 0.052099, 0.068090] #T1
+        Rot:  [ 0.904961, 0.005940, 0.425453,
+               -0.009338, 0.999939, 0.005902,
+               -0.425392, -0.009314, 0.904961]
+        # Trans: [-0.011,-0.02329,0.04412] # /livox/imu # T4 
+        # Rot:  [ 1,0,0,
+        #         0,1,0,
+                # 0,0,1]
 num_lidars: 1
 lidar_timestamp_end: false  # if the timestamp of a lidar scan is set at the end of the scan
 

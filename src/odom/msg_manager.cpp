@@ -662,9 +662,9 @@ namespace cocolic
     velodyne_feature_extraction_->ParsePointCloudNoFeature(vlp16_msg, vlp_raw_cloud); // 
 
     // // transform the input cloud to Lidar0 frame
-    // if (lidar_id != 0)
-    //   pcl::transformPointCloud(*vlp_raw_cloud, *vlp_raw_cloud,
-    //                            T_LktoL0_vec_[lidar_id]);
+    if (lidar_id != 0)
+      pcl::transformPointCloud(*vlp_raw_cloud, *vlp_raw_cloud,
+                               T_LktoL0_vec_[lidar_id]);
 
     // use for extract feature
     // velodyne_feature_extraction_->LidarHandler(vlp_raw_cloud);

@@ -13,12 +13,13 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-file(GLOB_RECURSE OLD_OPENCV "/usr/lib/x86_64-linux-gnu/libopencv*")
-list(REMOVE_ITEM catkin_LIBRARIES ${OLD_OPENCV})
+# file(GLOB_RECURSE OLD_OPENCV "/usr/lib/x86_64-linux-gnu/libopencv*")
+# list(REMOVE_ITEM catkin_LIBRARIES ${OLD_OPENCV})
 
 
 include_directories("/home/h/ku/pcl-1.14-installpath/include/pcl-1.14") #pcl-1.13 与 自带的pcl-1.10冲突，使用该指令
 set(PCL_DIR "/home/h/ku/pcl-1.14-installpath/share/pcl-1.14")
+
 set(Ceres_DIR "/home/h/ku/ceres-2.0.0-installpath/lib/cmake")
 set(OpenCV_DIR "/home/h/ku/opencv-4.5.3/build")
 set(cv_bridge_DIR "/home/h/ku/catkin_cv_bridge/devel/share/cv_bridge/cmake")
@@ -54,8 +55,7 @@ find_package(Ceres REQUIRED)
 # find_package(Sophus REQUIRED)
 find_package(OpenCV  4 REQUIRED)
 find_package(GTSAM REQUIRED)
-# find_package(ncnn REQUIRED)
-# find_package(PCL 1.13.0 REQUIRED HINTS ${PCL_DIR})
+# find_package(ncnn REQUIRED))
 
 # find_package(yaml-cpp REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -76,8 +76,13 @@ generate_messages(
 )
 
 catkin_package(
-  INCLUDE_DIRS src
+  INCLUDE_DIRS src include
   CATKIN_DEPENDS std_msgs
+  LIBRARIES
+  ${PROJECT_NAME}
+  # nano_gicp
+  # nanoflann
+  fast_gicp
 )
 
 
@@ -102,8 +107,8 @@ include_directories(
 )
 
 link_directories(
-   ${OpenCV_LIBRARY_DIRS}
-"/home/h/ku/pcl-1.14-installpath/lib"
+  ${OpenCV_LIBRARY_DIRS}
+  "/home/h/ku/pcl-1.14-installpath/lib"
 )
 
 list(APPEND thirdparty_libraries
@@ -116,6 +121,42 @@ list(APPEND thirdparty_libraries
         ${Boost_LIBRARIES}
         ${Boost_FILESYSTEM_LIBRARY}
         ${Boost_SERIALIZATION_LIBRARY} # serialization
+        "/home/h/ku/pcl-1.14-installpath/lib"
+)
+
+
+#Fast_VGICP
+add_library(fast_gicp STATIC
+src/fvgicp/fast_gicp.cpp  
+src/fvgicp/dwvgicp.cpp  
+src/fvgicp/lsq_registration.cpp
+include/fvgicp/dwvgicp.hpp
+include/fvgicp/fast_gicp.hpp
+include/fvgicp/lsq_registration.hpp
+include/fvgicp/dwvgicp_impl.hpp
+)
+target_link_libraries(fast_gicp  "/home/h/ku/pcl-1.14-installpath/lib/libpcl_registration.so"
+"/home/h/ku/pcl-1.14-installpath/lib" ${OpenMP_LIBS})
+
+add_executable(alaserPGO 
+  src/laserPosegraphOpt.cpp
+  include/scancontext/Scancontext.cpp
+)
+target_link_libraries(alaserPGO 
+  ${catkin_LIBRARIES} 
+  ${CERES_LIBRARIES}
+  ${OpenMP_CXX_FLAGS} 
+  "/home/h/ku/pcl-1.14-installpath/lib/libpcl_registration.so"
+    "/home/h/ku/pcl-1.14-installpath/lib"
+  gtsam
+  fast_gicp
+)
+
+add_executable(livox_solve src/scanLivox.cpp)
+target_link_libraries(livox_solve 
+   ${thirdparty_libraries}
+  #  fmt::fmt
+  "/home/h/ku/pcl-1.14-installpath/lib"
 )
 
 add_library(spline_lib src/spline/trajectory.cpp)
@@ -166,16 +207,6 @@ target_link_libraries(odometry_node
   "/home/h/ku/pcl-1.14-installpath/lib"
 )
 
-# add_executable(alaserPGO 
-#   src/PGO/laserPosegraphOpt.cpp
-#   include/scancontext/Scancontext.cpp
-# )
-# target_link_libraries(alaserPGO 
-#   ${catkin_LIBRARIES} ${CERES_LIBRARIES}
-#   ${OpenMP_CXX_FLAGS} lidar_lib
-#   "/home/h/ku/pcl-1.14-installpath/lib"
-#   gtsam
-# )
 
 #Ncnn
 

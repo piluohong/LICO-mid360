@@ -255,6 +255,11 @@ namespace cocolic
     // uint valid_num = 0;
     for (size_t i = 0; i < plsize; i++)
     {
+      if (!std::isfinite( lidar_msg->points[i].x) ||
+        !std::isfinite( lidar_msg->points[i].y) ||
+        !std::isfinite( lidar_msg->points[i].z)) {
+      continue;
+    }
       RTPoint pt;
       pt.x  = lidar_msg->points[i].x;
       pt.y  = lidar_msg->points[i].y;

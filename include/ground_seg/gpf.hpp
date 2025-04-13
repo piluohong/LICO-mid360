@@ -60,10 +60,21 @@ private:
         }
         
         extract_initial_seeds(*cloud);
-        estimate_plane_parameter();
-        extract_plane_cloud(*cloud,ground_point_cloud,noground_point_cloud);
+        // 迭代
+        for(int i = 0; i < N_iter; i++){
+            if(i == 0) th_dist_ = 0.2;
+            if(i == 1) th_dist_ = 0.1;
+            if(i == 2) th_dist_ = 0.1;
+            estimate_plane_parameter();
+            ground_plane_cloud->clear();
+            ground_point_cloud->clear();
+            noground_point_cloud->clear();
+            extract_plane_cloud(*cloud,ground_point_cloud,noground_point_cloud);
+               
+        }
 
-
+        ground_vec.push_back(*ground_point_cloud);
+        noground_vec.push_back(*noground_point_cloud);
         // 6. 发布结果
         publishResults(input_msg->header, ground_point_cloud, noground_point_cloud);
 
@@ -82,7 +93,7 @@ private:
     }
     double lpr_height = cnt != 0 ? height_sum / cnt : 0;	// 求解其高度均值					
     for (int i = 0; i < input_point_cloud.points.size(); i++){
-        if (input_point_cloud.points[i].z < lpr_height  - 1.0){ //1.0 -> raw lidar's z
+        if (input_point_cloud.points[i].z < lpr_height + 0.6){ //0.6 -> raw lidar's z
             ground_plane_cloud->points.push_back(input_point_cloud.points[i]);
         }
     }
@@ -130,7 +141,9 @@ void estimate_plane_parameter(void){
         plane_normal_.setZero();
         dis_ = 0.0;
         th_dist_d_ = 0.0;
+        
     }
+    
     return;
 }
 
@@ -152,7 +165,7 @@ void extract_plane_cloud(const pcl::PointCloud<pcl::PointXYZ> input_point_cloud,
             noground_point_cloud->points.push_back(input_point_cloud[r]);
         }
     }
-    ground_vec.push_back(*ground_point_cloud);
+    *ground_plane_cloud = *ground_point_cloud;
     return;
 }
 
@@ -179,19 +192,23 @@ public:
     {
        
       std::cout << "Saving Ground map ....." << std::endl;
-      pcl::PointCloud<pcl::PointXYZ>savecloud;
+      pcl::PointCloud<pcl::PointXYZ> groundcloud;
+      pcl::PointCloud<pcl::PointXYZ> nogroundcloud;
       int frames = 0, pt_cnt; 
       for (int i = 0; i <  ground_vec.size(); i++)
       {
         if (i % 1 ==0){
-          savecloud += ground_vec[i];
+          groundcloud += ground_vec[i];
           frames++;
-          pt_cnt += savecloud.size();
+          pt_cnt += groundcloud.size();
         }
       }
+      for(auto &cloud : noground_vec)
+            nogroundcloud += cloud;
       std::cout << "Frame's num:" << frames << " , All points"<<" : " << pt_cnt << std::endl;;
      
-      pcl::io::savePCDFileBinary("/home/h/hong.MD.degree/lico_ws/src/LICO-mid360/PCD/ground.pcd", savecloud);
+      pcl::io::savePCDFileBinary("/home/h/hong.MD.degree/lico_ws/src/LICO-mid360/PCD/ground.pcd", groundcloud);
+      pcl::io::savePCDFileBinary("/home/h/hong.MD.degree/lico_ws/src/LICO-mid360/PCD/noground.pcd", nogroundcloud);
       std::cout << "Finish save ground map. \n";
       return;
     
@@ -212,10 +229,12 @@ public:
       pcl::PointCloud<pcl::PointXYZ>::Ptr noground_point_cloud;
 
       std::vector<pcl::PointCloud<pcl::PointXYZ>> ground_vec;
+      std::vector<pcl::PointCloud<pcl::PointXYZ>> noground_vec;
 
       Eigen::Vector3f plane_normal_;
       float th_dist_d_;
       float th_dist_ = 0.1;
       float dis_ = 0.;
+      int N_iter = 2;
 
 };

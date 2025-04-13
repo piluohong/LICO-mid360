@@ -190,7 +190,7 @@ namespace cocolic
           UpdateTwoSeg();
           trajectory_->InitBlendMat();  // blending matrix is computed by knots of b-spline
         }
-        else
+        else //没有准备好时
         {
           // continue;
           return;
@@ -476,21 +476,23 @@ namespace cocolic
     // ROS_WARN("3dEBUG\n");
 
     //publish odom
-    auto pose = trajectory_->GetLidarPoseNURBS(msg.lidar_timestamp);
+    auto pose = trajectory_->GetLidarPoseNURBS(msg.lidar_timestamp); // 当前lidar帧的开始时间戳的位姿
     // ROS_WARN("4dEBUG\n");
     pose_final.push_back(pose);
-    // ROS_WARN("5dEBUG\n");
-    odom_viewer_.PublishLidarAndCameraOdom(pose.unit_quaternion(), pose.translation(),msg_manager_->timestamps_buf_.back());
-    // ROS_WARN("6dEBUG\n");
-    odom_viewer_.PublishCloudPgo(*cloud_distort);
-    // ROS_WARN("7dEBUG\n");
+    VPoint pt;pt.x = pose.translation()[0];pt.y = pose.translation()[1];pt.z = pose.translation()[2];
+    path_cloud.points.push_back(pt);
+    odom_viewer_.PublishPathCloud(path_cloud);
+    // ROS_WARN("5dEBUG\n"); 
     /// [6] update visual global map
     if (cloud_distort->size() != 0)
     {
-      trajectory_->UndistortScanInG(*cloud_distort, latest_feature_before_active_time.timestamp, *cloud_undistort);
+      trajectory_->UndistortScanInG(*cloud_distort, latest_feature_before_active_time.timestamp, *cloud_undistort); // 按照每个点的时间戳去畸变补偿运动
       camera_handler_->UpdateVisualGlobalMap(cloud_undistort, latest_feature_before_active_time.time_max * NS_TO_S);
     }
-
+    ros::Time temp_time = ros::Time::now();
+     odom_viewer_.PublishCloudPgo(*cloud_undistort, pose,temp_time);
+      odom_viewer_.PublishLidarAndCameraOdom(pose.unit_quaternion(), pose.translation(),temp_time);
+    // ROS_WARN("6dEBUG\n");
     all_globalmap.push_back(*cloud_undistort);
      // use feature_cur_ds_ to update localmap in ikdtree
     double t0 = omp_get_wtime();

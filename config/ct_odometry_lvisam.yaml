@@ -1,17 +1,17 @@
 ## Mode
 ## 1 : Odometry_Offline   |  2 : Odometry_Online
 mode: 2
-odometry_mode: 1 # LIO = 0, LICO = 1
+odometry_mode: 0  # LIO = 0, LICO = 1
 
-log_path: /home/hyq/slam/lvio/src/LICO-mid360-main/log
-config_path: /home/hyq/slam/lvio/src/LICO-mid360-main/config
-lidar_yaml: /lvisam/lidar.yaml
+log_path: /home/h/hong.MD.degree/lico_ws/src/LICO-mid360/log
+config_path: /home/h/hong.MD.degree/lico_ws/src/LICO-mid360/config
+lidar_yaml: /lvisam/lidar_ivox.yaml
 imu_yaml: /lvisam/imu.yaml
 camera_yaml: /lvisam/camera.yaml
 
-bag_path: /mnt/i/洪苑乾的数据集/handheld.bag # handheld.bag garden.bag
-bag_start: 0.  # 播放数据起始偏移量
-bag_durr: -1.   # 播放多少秒的数据
+bag_path: //home/h/datasets/VELODYNE/walking_dataset.bag  # degenerate_seq_01.bag、degenerate_seq_02.bag、hku_campus_seq_00.bag
+bag_start: 0.
+bag_durr: -1.
 
 
 ### SplineParams ###
@@ -22,18 +22,19 @@ division_coarse: 1  # if it is uniform, decide how many control points to place 
 
 
 ### OptimizationParams ###
-t_begin_add_cam: 1.0  # [s] visual constraints will be added after the system has been successfully initialized for a while
-lidar_iter: 2
+t_begin_add_cam: 1  # [s] visual constraints will be added after the system has been successfully initialized for a while
+lidar_iter: 1 # 2 
 use_lidar_scale: true  # scale the lidar weight
-lidar_weight: 500.0
-image_weight: 4.0
+lidar_weight: 500.0 #500.0
+image_weight: 4.0 #4.0
+
 # imu：MicroStrain 3DM-GX5-25（500Hz）
 # derived from data manual https://www.microstrain.com/sites/default/files/3dm-gx5-25_datasheet_8400-0093.pdf
-gyroscope_noise_density: 1.5636343949698187e-03 #1.951337392e-02
-gyroscope_random_walk: 3.5640318696367613e-05
-accelerometer_noise_density: 3.9939570888238808e-03 #5.478366545e-03
-accelerometer_random_walk: 6.4356659353532566e-05    
-
+gyroscope_noise_density: 1.951337392e-03 #1.951337392e-02
+gyroscope_random_walk: 3.878509383e-05
+accelerometer_noise_density: 5.478366545e-02 #5.478366545e-03
+accelerometer_random_walk: 3.92e-04       
 
 ### EvalutaionParams ###
 is_evo_viral: false
+

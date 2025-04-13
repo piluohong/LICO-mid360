@@ -82,6 +82,7 @@ namespace cocolic
     ros::Publisher pub_spline_active_ctrl_cloud_;
 
     ros::Publisher pub_spline_marg_ctrl_cloud_;
+    ros::Publisher pub_path_cloud_;
 
     std::map<SplineViewerType, ros::Publisher> pub_spline_ctrl_type_;
     std::map<SplineViewerType, ros::Publisher> pub_spline_ctrl_cloud_type_;
@@ -164,6 +165,8 @@ namespace cocolic
           nh.advertise<sensor_msgs::PointCloud2>("/spline/active_ctrl_cloud", 10);
       pub_spline_marg_ctrl_cloud_ =
           nh.advertise<sensor_msgs::PointCloud2>("/spline/marg_ctrl_cloud", 10);
+      pub_path_cloud_ = 
+          nh.advertise<sensor_msgs::PointCloud2>("/lidar_path_cloud", 10);
 
       pub_spline_ctrl_type_[Init] =
           nh.advertise<nav_msgs::Path>("/spline/init_ctrl_path", 10);
@@ -288,6 +291,7 @@ namespace cocolic
       // ros::Time time;
       // time.fromSec(timestamp);
       odom_ros.header.stamp = timestamp;//ros::Time().fromNSec(timestamp);
+      // odom_ros.header.stamp = ros::Time::now();
       odom_ros.header.frame_id = "map";
       odom_ros.child_frame_id = "lidarAndcamera";
 
@@ -548,6 +552,19 @@ namespace cocolic
       }
     }
 
+    void PublishPathCloud(const VPointCloud &path_cloud)
+    {
+      if (pub_path_cloud_.getNumSubscribers() != 0 &&
+         path_cloud.size() > 0)
+      {
+        sensor_msgs::PointCloud2 cloud_msg;
+        pcl::toROSMsg(path_cloud, cloud_msg);
+        cloud_msg.header.stamp = ros::Time::now();
+        cloud_msg.header.frame_id = "map";
+        pub_path_cloud_.publish(cloud_msg);
+      }
+    }
+
     void PublishSplineTrajectory(Trajectory::Ptr trajectory, double min_time,
                                  double max_time, double dt)
     {
@@ -561,7 +578,7 @@ namespace cocolic
         // for (double t = min_time; t < max_time; t += dt)
         for (double t = min_time; t < max_time - 0.08; t += dt)
         {
-          SE3d pose = trajectory->GetIMUPoseNURBS(t);
+          SE3d pose = trajectory->GetIMUPoseNURBS(t); // IMU为基准系
           geometry_msgs::PoseStamped poseIinG;
           poseIinG.header.stamp = t_temp.fromSec(t);
           poseIinG.header.frame_id = "map";
@@ -789,11 +806,26 @@ namespace cocolic
       }
     }
     // cloud_pgo
-    void PublishCloudPgo(const PosCloud &cloud)
-    {;      
+    void PublishCloudPgo(const PosCloud &cloud, SE3d &pose, ros::Time timestamp)
+    {
+        PosCloud cloud_undistort_local;
+        for (auto& pt : cloud.points)
+        {
+          Eigen::Vector3d p_Lk(pt.x, pt.y, pt.z);
+           Eigen::Vector3d point_out;
+          point_out = pose.inverse() * p_Lk;
+
+          PosPoint point;
+          point.x = point_out(0);
+          point.y = point_out(1);
+          point.z = point_out(2);
+          point.intensity = pt.intensity;
+          point.timestamp = pt.timestamp;
+          cloud_undistort_local.points.push_back(point);
+        }
         sensor_msgs::PointCloud2 pgo_msg;
-        pcl::toROSMsg(cloud, pgo_msg);
-        pgo_msg.header.stamp = ros::Time::now();
+        pcl::toROSMsg(cloud_undistort_local, pgo_msg);
+        pgo_msg.header.stamp = timestamp;//ros::Time::now();
         pgo_msg.header.frame_id = "map";
         pub_cloud_pgo_.publish(pgo_msg);
     }

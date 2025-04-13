@@ -12,21 +12,33 @@
 
 #include <Eigen/Dense>
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/eigen.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <cv_bridge/cv_bridge.h>
-
+#define PCL_COMPILE
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl_conversions/pcl_conversions.h>
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/eigen.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <cv_bridge/cv_bridge.h>
 
 #include "scancontext/nanoflann.hpp"
 #include "scancontext/KDTreeVectorOfVectorsAdaptor.h"
 #include "aloam_velodyne/tic_toc.h"
 
 #include <utils/mypcl_cloud_type.h>
+
+// struct PointType {
+//     PCL_ADD_POINT4D;  // 确保Eigen对齐
+//     float intensity;
+//     EIGEN_MAKE_ALIGNED_OPERATOR_NEW  // 关键！
+// }EIGEN_ALIGN16;
+
+// POINT_CLOUD_REGISTER_POINT_STRUCT(PointType,       
+// (float, x, x)
+// (float, y, y)
+// (float, intensity, intensity))
 
 using namespace Eigen;
 using namespace nanoflann;
@@ -39,7 +51,7 @@ using std::atan2;
 using std::cos;
 using std::sin;
 
-using SCPointType = pcl::PointXYZI; // using xyz only. but a user can exchange the original bin encoding function (i.e., max hegiht) to max intensity (for detail, refer 20 ICRA Intensity Scan Context)
+using SCPointType =  VPoint; // using xyz only. but a user can exchange the original bin encoding function (i.e., max hegiht) to max intensity (for detail, refer 20 ICRA Intensity Scan Context)
 using KeyMat = std::vector<std::vector<float> >;
 using InvKeyTree = KDTreeVectorOfVectorsAdaptor< KeyMat, float >;
 

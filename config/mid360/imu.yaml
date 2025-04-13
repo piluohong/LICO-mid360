@@ -1,8 +1,8 @@
-imu_topic: /livox/imu
+imu_topic: /imu
 
-imu_excite_threshold: 0.5 # statical initialization, do not move!s
+imu_excite_threshold: 1.6 # statical initialization, do not move!s
 gravity_mag: 9.8
-if_normalized: true # imu acc is normalized in FAST-LIVO dataset
+if_normalized: false # imu acc is normalized in FAST-LIVO dataset
 if_use_init_bg: false
 window_length: 1.0 # s
 

@@ -251,18 +251,25 @@ namespace cocolic
         // p_full_cloud.reset(new RTPointCloud());
         // p_full_cloud->resize(plsize);
 
-        out_cloud->header = tmp_out_cloud->header;
-        out_cloud->height = tmp_out_cloud->height;
-        out_cloud->width = tmp_out_cloud->width;
-        out_cloud->resize(tmp_out_cloud->height * tmp_out_cloud->width);
-        out_cloud->is_dense = tmp_out_cloud->is_dense;
+        // out_cloud->header = tmp_out_cloud->header;
+        // out_cloud->height = tmp_out_cloud->height;
+        // out_cloud->width = tmp_out_cloud->width;
+        // out_cloud->resize(tmp_out_cloud->height * tmp_out_cloud->width);
+        // out_cloud->is_dense = tmp_out_cloud->is_dense;
         // out_cloud.reset(new RTPointCloud());
+        // out_cloud->resize(plsize);
+        out_cloud->clear();
         // out_cloud->resize(plsize);
         // std::cout << "[plsize] " << plsize << std::endl;
        
         for (size_t i = 0; i < plsize; i++)
         {
           const auto &pt = tmp_out_cloud->points[i];
+           if (!std::isfinite( pt.x) ||
+              !std::isfinite( pt.y) ||
+              !std::isfinite( pt.z)) {
+            continue;
+          }
           RTPoint added_pt;
           added_pt.x = pt.x;
           added_pt.y = pt.y;
@@ -275,16 +282,18 @@ namespace cocolic
           // if (i == plsize - 2)
           // std::cout << "pts timestamp: " << added_pt.time << std::endl;
           
-          out_cloud->points[i] = added_pt;
+          // out_cloud->points[i] = added_pt;
           
           // p_full_cloud->points[i] = added_pt;
           // p_full_cloud->push_back(added_pt);
+          p_full_cloud->push_back(added_pt);
+          out_cloud->push_back(added_pt);
           if (i % point_filter_num == 0)
           {
             if (added_pt.x * added_pt.x + added_pt.y * added_pt.y + added_pt.z * added_pt.z > (min_dist * min_dist))
             {
                 p_surface_cloud->push_back(added_pt);
-                p_full_cloud->push_back(added_pt);
+                
             }
           }
         }
@@ -314,6 +323,11 @@ namespace cocolic
         for (int i = 0; i < plsize; i++)
         {
           const auto &pt = tmp_out_cloud->points[i];
+          if (!std::isfinite( pt.x) ||
+              !std::isfinite( pt.y) ||
+              !std::isfinite( pt.z)) {
+            continue;
+          }
           RTPoint added_pt;
           added_pt.x = pt.x;
           added_pt.y = pt.y;
@@ -357,6 +371,11 @@ namespace cocolic
         for (int i = 0; i < plsize; i++)
         {
           const auto &pt = tmp_out_cloud->points[i];
+          if (!std::isfinite( pt.x) ||
+              !std::isfinite( pt.y) ||
+              !std::isfinite( pt.z)) {
+            continue;
+          }
           RTPoint added_pt;
           added_pt.x = pt.x;
           added_pt.y = pt.y;

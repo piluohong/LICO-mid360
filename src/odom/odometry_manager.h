@@ -265,8 +265,8 @@ public:
           RGBcloud += all_RGBglobalmap[i];
         }
       }
-      pcl::io::savePCDFileBinary("/home/hong/slam/lvio/src/LICO-mid360-main/LICO-mid360-main/PCD/global.pcd", savecloud);
-      pcl::io::savePCDFileBinary("/home/hong/slam/lvio/src/LICO-mid360-main/LICO-mid360-main/PCD/RGBglobal.pcd", RGBcloud);
+      pcl::io::savePCDFileBinary("/home/h/hong.MD.degree/lico_ws/src/LICO-mid360/PCD/global.pcd", savecloud);
+      pcl::io::savePCDFileBinary("/home/h/hong.MD.degree/lico_ws/src/LICO-mid360/PCD/RGBglobal.pcd", RGBcloud);
       std::cout << "Finish save map. \n";
       return;
     
@@ -329,6 +329,7 @@ public:
   }
 
   std::vector<SE3d> pose_final;
+  VPointCloud path_cloud;
 
   };
 

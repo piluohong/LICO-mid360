@@ -1,17 +1,17 @@
 ## Mode
 ## 1 : Odometry_Offline   |  2 : Odometry_Online
 mode: 2
-odometry_mode: 1  # LIO = 0, LICO = 1
+odometry_mode: 0  # LIO = 0, LICO = 1
 
-log_path: /home/hong/slam/lvio/src/LICO-mid360-main/LICO-mid360-main/log
-config_path: /home/hong/slam/lvio/src/LICO-mid360-main/LICO-mid360-main/config
-lidar_yaml: /r3live/lidar.yaml
+log_path: /home/h/hong.MD.degree/lico_ws/src/LICO-mid360/log
+config_path: /home/h/hong.MD.degree/lico_ws/src/LICO-mid360/config
+lidar_yaml: /r3live/lidar_ivox.yaml
 imu_yaml: /r3live/imu.yaml
 camera_yaml: /r3live/camera.yaml
 
-bag_path: /mnt/f/hhh_datasets/hku_park_00.bag  # degenerate_seq_01.bag、degenerate_seq_02.bag、hku_campus_seq_00.bag
+bag_path: /media/h/My Passport/洪苑乾的数据集/Retail_Street.bag  # degenerate_seq_01.bag、degenerate_seq_02.bag、hku_campus_seq_00.bag
 bag_start: 0.
-bag_durr: -1
+bag_durr: -1.
 
 
 ### SplineParams ###
@@ -22,18 +22,18 @@ division_coarse: 1  # if it is uniform, decide how many control points to place 
 
 
 ### OptimizationParams ###
-t_begin_add_cam: 5.0  # [s] visual constraints will be added after the system has been successfully initialized for a while
-lidar_iter: 2 # 2: LICO
+t_begin_add_cam: 1  # [s] visual constraints will be added after the system has been successfully initialized for a while
+lidar_iter: 2 # 2 
 use_lidar_scale: true  # scale the lidar weight
-lidar_weight: 500.0
-image_weight: 4.0
+lidar_weight: 500.0 #500.0
+image_weight: 4.0 #4.0
 # imu：BMI088（200Hz）
 # derived from data manual https://terra-1-g.djicdn.com/65c028cd298f4669a7f0e40e50ba1131/demo/avia/Livox%20AVIA%20User%20Manual_CHS.pdf
 gyroscope_noise_density: 3.45557556e-03
 gyroscope_random_walk: 2.617993833e-07                    
 accelerometer_noise_density: 2.425376259e-02
-accelerometer_random_walk: 1.96e-06         
-
+accelerometer_random_walk: 1.96e-06    
 
 ### EvalutaionParams ###
 is_evo_viral: false
+
