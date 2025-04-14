@@ -5,8 +5,8 @@ odometry_mode: 0  # LIO = 0, LICO = 1
 
 log_path: /home/h/hong.MD.degree/lico_ws/src/LICO-mid360/log
 config_path: /home/h/hong.MD.degree/lico_ws/src/LICO-mid360/config
-lidar_yaml: /mid360/lidar_ivox.yaml
-imu_yaml: /mid360/imu.yaml
+lidar_yaml: /mid360/lidar_livox.yaml
+imu_yaml: /mid360/imu_livox.yaml
 camera_yaml: /mid360/camera.yaml
 
 bag_path: /media/h/My Passport/洪苑乾的数据集/datasets/se_2.bag  # degenerate_seq_01.bag、degenerate_seq_02.bag、hku_campus_seq_00.bag

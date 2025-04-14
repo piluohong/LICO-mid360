@@ -34,6 +34,8 @@
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <Eigen/Dense>
 #include <Eigen/Core>
@@ -68,8 +70,8 @@ using std::endl;
 
 using PointType =  VPoint;
 
-bool use_knn = false;
-bool use_sc = true;
+bool use_knn = true;
+bool use_sc = false;
 
 
 double keyframeMeterGap;
@@ -86,7 +88,7 @@ std::queue<nav_msgs::Odometry::ConstPtr> odometryBuf;
 std::queue<sensor_msgs::PointCloud2ConstPtr> fullResBuf;
 std::queue<sensor_msgs::PointCloud2ConstPtr> fullBuf;
 std::queue<sensor_msgs::NavSatFix::ConstPtr> gpsBuf;
-std::queue<std::pair<int, int> > scLoopICPBuf;
+std::deque<std::pair<int, int> > scLoopICPBuf;
 
 std::mutex mBuf;
 std::mutex mKF;
@@ -140,6 +142,7 @@ double recentOptimizedY = 0.0;
 ros::Publisher pubMapAftPGO, pubOdomAftPGO, pubPathAftPGO;
 ros::Publisher pubLoopScanLocal, pubLoopSubmapLocal;
 ros::Publisher pubOdomRepubVerifier;
+ros::Publisher loop_constraint_pub;
 
 std::string save_directory;
 std::string pgKITTIformat, pgScansDirectory;
@@ -384,6 +387,9 @@ void runISAM2opt(void)
     // called when a variable added 
     isam->update(gtSAMgraph, initialEstimate);
     isam->update();
+    isam->update();
+    isam->update();
+    isam->update();
     
     gtSAMgraph.resize(0);
     initialEstimate.clear();
@@ -442,12 +448,11 @@ void loopFindNearKeyframesCloud( pcl::PointCloud<PointType>::Ptr& nearKeyframes,
     *nearKeyframes = *cloud_temp;
 }  //loopFindNearKeyframesCloud
 
-static bool has_converged = false;
+bool has_converged = false;
 Eigen::Matrix4f computeICP(const pcl::PointCloud<PointType>::Ptr& source,
                           const pcl::PointCloud<PointType>::Ptr& target,
                           int max_iterations = 100, float max_distance = 1.0) {
     // Step 0: 初始化
-    has_converged = false;
     auto t0 = omp_get_wtime();
     Eigen::Matrix4f transformation = Eigen::Matrix4f::Identity();
     pcl::KdTreeFLANN<PointType> kdtree;
@@ -534,11 +539,21 @@ float computeFitnessScore(
     return score / source.size();
 }
 
-
+ int pre_cur_id = 0, pre_loop_id = 0;
 std::optional<gtsam::Pose3> doICPVirtualRelative( int _loop_kf_idx, int _curr_kf_idx )
 {
+    if (_curr_kf_idx ==pre_cur_id  &&  _loop_kf_idx == pre_loop_id)
+    {
+        return std::nullopt;
+    }
+    pre_cur_id = _curr_kf_idx; pre_loop_id = _loop_kf_idx;
+    mKF.lock();
+    auto keyframeU = keyframePosesUpdated;
+    mKF.unlock();
+   
+
     // parse pointclouds
-    int historyKeyframeSearchNum = 25; // enough. ex. [-25, 25] covers submap length of 50x1 = 50m if every kf gap is 1m
+    int historyKeyframeSearchNum = 15; // enough. ex. [-25, 25] covers submap length of 50x1 = 50m if every kf gap is 1m
     pcl::PointCloud<PointType>::Ptr cureKeyframeCloud(new pcl::PointCloud<PointType>);
     pcl::PointCloud<PointType>::Ptr targetKeyframeCloud(new pcl::PointCloud<PointType>);
     pcl::PointCloud<PointType>::Ptr unused_result(new pcl::PointCloud<PointType>);
@@ -562,31 +577,35 @@ std::optional<gtsam::Pose3> doICPVirtualRelative( int _loop_kf_idx, int _curr_kf
     }
 
     // GICP Settings
-    //  fast_gicp::FastGICP<PointType,PointType>vgicp_loop;
-    // vgicp_loop.setNumThreads(4);
-    // vgicp_loop.setMaximumIterations(100);
-    // vgicp_loop.setMaxCorrespondenceDistance(1.0);
-    // vgicp_loop.setTransformationEpsilon(1e-4);
-    // vgicp_loop.setInputSource(cureKeyframeCloud);
-    // vgicp_loop.setInputTarget(targetKeyframeCloud);
-    // vgicp_loop.align(*unused_result, Eigen::Matrix4f::Identity());
-    //     float loopFitnessScoreThreshold = 1.0; // user parameter but fixed low value is safe. 
-    // if (!vgicp_loop.hasConverged()  || vgicp_loop.getFitnessScore() > loopFitnessScoreThreshold) {
-    //     std::cout << "[SC loop] ICP fitness test failed (" << vgicp_loop.getFitnessScore() << " > " << loopFitnessScoreThreshold << "). Reject this SC loop." << std::endl;
-    //     return std::nullopt;
-    // } else {
-    //     std::cout << "[SC loop] ICP fitness test passed (" << vgicp_loop.getFitnessScore() << " < " << loopFitnessScoreThreshold << "). Add this SC loop." << std::endl;
-    // }
-
-    Eigen::Transform<float, 3, Eigen::Affine> correctionLidarFrame(computeICP(cureKeyframeCloud,targetKeyframeCloud,100,150));
-    
+     fast_gicp::FastVGICP<PointType,PointType> vgicp_loop;
+    vgicp_loop.setNumThreads(6);
+    vgicp_loop.setMaximumIterations(100);
+    vgicp_loop.setMaxCorrespondenceDistance(1.0);
+    vgicp_loop.setTransformationEpsilon(1e-5);
+    vgicp_loop.setInputSource(cureKeyframeCloud);
+    vgicp_loop.setInputTarget(targetKeyframeCloud);
+    vgicp_loop.align(*unused_result, Eigen::Matrix4f::Identity());
+    if(!vgicp_loop.hasConverged()  || vgicp_loop.getFitnessScore() > 0.5)
+     {std::cout << "Jump tihs pair loop\n";has_converged = false;return std::nullopt;}
+    Eigen::Transform<float, 3, Eigen::Affine> correctionLidarFrame(vgicp_loop.getFinalTransformation());//computeICP(cureKeyframeCloud,targetKeyframeCloud,100,1.0));
     // if ( computeFitnessScore(*cureKeyframeCloud,*targetKeyframeCloud,correctionLidarFrame) > 0.3)
     //     return std::nullopt;
-      float x, y, z, roll, pitch, yaw;
-    pcl::getTranslationAndEulerAngles (correctionLidarFrame, x, y, z, roll, pitch, yaw);
-    
-    gtsam::Pose3 poseFrom = Pose3(Rot3::RzRyRx(roll, pitch, yaw), Point3(x, y, z));
-    gtsam::Pose3 poseTo = Pose3(Rot3::RzRyRx(0.0, 0.0, 0.0), Point3(0.0, 0.0, 0.0));
+    float x, y, z, roll, pitch, yaw;
+  Eigen::Affine3f tWrong= Eigen::Affine3f::Identity();
+  auto temp_cur = keyframeU[_curr_kf_idx];
+ tWrong = pcl::getTransformation(temp_cur.x,temp_cur.y,temp_cur.z, temp_cur.roll,temp_cur.pitch,temp_cur.yaw);
+  // transform from world origin to corrected pose
+  std::cout << "=====> before loop cur & curid: \n" << tWrong.translation() << std::endl;
+  printf("roll:%f, pitch:%f, yaw:%f \n",tWrong.rotation().eulerAngles(2,1,0)[2],tWrong.rotation().eulerAngles(2,1,0)[1],tWrong.rotation().eulerAngles(2,1,0)[0]);
+  std::cout << _curr_kf_idx << std::endl; 
+  Eigen::Affine3f tCorrect = correctionLidarFrame * tWrong; // 当前帧补偿后的结果
+  std::cout << "after loop cur & preid:  \n" << tCorrect.translation() << std::endl;
+  std::cout << _loop_kf_idx<< std::endl;
+  pcl::getTranslationAndEulerAngles (tCorrect,x, y, z, roll, pitch, yaw);
+  printf("=====> x,y,z,roll,pitch,yaw: %f, %f, %f, %f, %f, %f\n",x,y,z,roll, pitch, yaw);
+  gtsam::Pose3 poseFrom = gtsam::Pose3(Rot3::RzRyRx(roll, pitch, yaw), Point3(x, y, z));
+  auto pose_to = keyframeU[_loop_kf_idx];
+  gtsam::Pose3 poseTo = Pose3(Rot3::RzRyRx(pose_to.roll, pose_to.pitch, pose_to.yaw), Point3(pose_to.x, pose_to.y, pose_to.z));
     
     return poseFrom.between(poseTo);
     
@@ -745,9 +764,9 @@ void process_pg()
             // if want to print the current graph, use gtSAMgraph.print("\nFactor Graph:\n");
 
             // save utility 
-            std::string curr_node_idx_str = padZeros(curr_node_idx);
-            pcl::io::savePCDFileBinary(pgScansDirectory + curr_node_idx_str + ".pcd", *thisKeyFrame); // scan 
-            pgTimeSaveStream << timeLaser << std::endl; // path 
+            // std::string curr_node_idx_str = padZeros(curr_node_idx);
+            // pcl::io::savePCDFileBinary(pgScansDirectory + curr_node_idx_str + ".pcd", *thisKeyFrame); // scan 
+            // pgTimeSaveStream << timeLaser << std::endl; // path 
         }
 
         // ps. 
@@ -760,6 +779,67 @@ void process_pg()
     }
 } // process_pg
 
+void visualizeLoopClosure()
+{
+  if (scLoopICPBuf.empty())
+    return;
+
+      visualization_msgs::MarkerArray markerArray;
+      // loop nodes
+      visualization_msgs::Marker markerNode;
+      markerNode.header.frame_id = "map";
+      markerNode.header.stamp = ros::Time::now();
+      markerNode.action = visualization_msgs::Marker::ADD;
+      markerNode.type = visualization_msgs::Marker::SPHERE_LIST;
+      markerNode.ns = "loop_nodes";
+      markerNode.id = 0;
+      markerNode.pose.orientation.w = 1;
+      markerNode.scale.x = 0.3;
+      markerNode.scale.y = 0.3;
+      markerNode.scale.z = 0.3;
+      markerNode.color.r = 0;
+      markerNode.color.g = 0.8;
+      markerNode.color.b = 1;
+      markerNode.color.a = 1;
+      // loop edges
+      visualization_msgs::Marker markerEdge;
+      markerEdge.header.frame_id = "map";
+      markerEdge.header.stamp = ros::Time::now();
+      markerEdge.action = visualization_msgs::Marker::ADD;
+      markerEdge.type = visualization_msgs::Marker::LINE_LIST;
+      markerEdge.ns = "loop_edges";
+      markerEdge.id = 1;
+      markerEdge.pose.orientation.w = 1;
+      markerEdge.scale.x = 0.15;
+      markerEdge.color.r = 1.0;
+      markerEdge.color.g = 0.5;
+      markerEdge.color.b = 1.0;
+      markerEdge.color.a = 1;
+      // this->loop_factor_mutex.lock();
+     for (auto it = scLoopICPBuf.begin(); it != scLoopICPBuf.end(); ++it)
+      {
+          int key_cur = it->first;
+          int key_pre = it->second;
+          geometry_msgs::Point p;
+          p.x = keyframePoses[key_cur].x;
+          p.y = keyframePoses[key_cur].y;
+          p.z = keyframePoses[key_cur].z;
+          markerNode.points.push_back(p);
+          markerEdge.points.push_back(p);
+          p.x = keyframePoses[key_pre].x;
+          p.y = keyframePoses[key_pre].y;
+          p.z = keyframePoses[key_pre].z;
+          markerNode.points.push_back(p);
+          markerEdge.points.push_back(p);
+      }
+      // this->loop_factor_mutex.unlock();
+
+      markerArray.markers.push_back(markerNode);
+      markerArray.markers.push_back(markerEdge);
+      loop_constraint_pub.publish(markerArray);
+    
+}
+
  void detectLoopClosureID_knn( std::vector<Pose6D> &keyframePoses,  std::pair<int, float> &result)
  {
       if (keyframePoses.size() <= 1) {
@@ -768,15 +848,15 @@ void process_pg()
 
     const Pose6D& lastPose = keyframePoses.back();
     int closestIndex = -1;
-    // double minDistance = std::numeric_limits<double>::max();
+    // float minDistance = std::numeric_limits<float>::max();
     int curr_node_idx = keyframePoses.size() - 1;
     for (int i = 0; i < keyframePoses.size() - 1; ++i) {
         const Pose6D& pose = keyframePoses[i];
         // 计算欧几里得距离（仅位置部分）
-        double dx = fabs(pose.x - lastPose.x);
-        double dy = fabs(pose.y - lastPose.y);
-       double dz = fabs(pose.z - lastPose.z);
-        double distance = std::sqrt(dx * dx + dy * dy + dz*dz);
+         float dx = fabs(lastPose.x - pose.x);
+        float dy = fabs(lastPose.y - pose.y);
+       float dz = fabs(lastPose.z - pose.z);
+        float distance = std::sqrt(dx * dx + dy * dy + dz*dz);
 
         if (distance < 4.0 && curr_node_idx - i > 50) {
             // minDistance = distance;
@@ -795,19 +875,22 @@ void performSCLoopClosure(void)
 {
     if( int(keyframePoses.size()) < scManager.NUM_EXCLUDE_RECENT) // do not try too early 
         return;
+    mKF.lock();
+    auto keypose_ = keyframePoses;
+    mKF.unlock();
     // TODO: 使用距离方式 or STD描述子代替
     std::pair<int, float> detectResult{-1,0.};
     if (use_sc)
         detectResult = scManager.detectLoopClosureID(); // first: nn index, second: yaw diff 
     if (use_knn)
-         detectLoopClosureID_knn(keyframePoses,detectResult);
+         detectLoopClosureID_knn(keypose_,detectResult);
     int SCclosestHistoryFrameID = detectResult.first;
     if( SCclosestHistoryFrameID != -1 ) { 
         const int prev_node_idx = SCclosestHistoryFrameID;
-        const int curr_node_idx = keyframePoses.size() - 1; // because cpp starts 0 and ends n-1
+        const int curr_node_idx = keypose_.size() - 1; // because cpp starts 0 and ends n-1
         cout << "Loop detected! - between " << prev_node_idx << " and " << curr_node_idx << "" << endl;
         mBuf.lock();
-        scLoopICPBuf.push(std::pair<int, int>(prev_node_idx, curr_node_idx));
+        scLoopICPBuf.push_front(std::pair<int, int>(prev_node_idx, curr_node_idx));
         // addding actual 6D constraints in the other thread, icp_calculation.
         mBuf.unlock();
     }
@@ -831,13 +914,14 @@ void process_icp(void)
     {
 		while ( !scLoopICPBuf.empty() )
         {
-            if( scLoopICPBuf.size() > 30 ) {
-                ROS_WARN("Too many loop clousre candidates to be ICPed is waiting ... Do process_lcd less frequently (adjust loopClosureFrequency)");
-            }
-
+            // if( scLoopICPBuf.size() > 30 ) {
+            //     ROS_WARN("Too many loop clousre candidates to be ICPed is waiting ... Do process_lcd less frequently (adjust loopClosureFrequency)");
+            // }
+            
             mBuf.lock(); 
+            visualizeLoopClosure();
             std::pair<int, int> loop_idx_pair = scLoopICPBuf.front();// 取到最新的回环对
-            scLoopICPBuf.pop();
+            // scLoopICPBuf.pop_back();
             mBuf.unlock(); 
 
             const int prev_node_idx = loop_idx_pair.first;
@@ -884,8 +968,8 @@ void process_isam(void)
             // cout << "running isam2 optimization ..." << endl;
             mtxPosegraph.unlock();
 
-            saveOptimizedVerticesKITTIformat(isamCurrentEstimate, pgKITTIformat); // pose
-            saveOdometryVerticesKITTIformat(odomKITTIformat); // pose
+            // saveOptimizedVerticesKITTIformat(isamCurrentEstimate, pgKITTIformat); // pose
+            // saveOdometryVerticesKITTIformat(odomKITTIformat); // pose
         }
     }
 }
@@ -944,7 +1028,7 @@ int main(int argc, char **argv)
     unused = system((std::string("mkdir -p ") + pgScansDirectory).c_str());
 
 	nh.param<double>("keyframe_meter_gap", keyframeMeterGap, 1.0); // pose assignment every k m move 
-	nh.param<double>("keyframe_deg_gap", keyframeDegGap, 45.0); // pose assignment every k deg rot 
+	nh.param<double>("keyframe_deg_gap", keyframeDegGap, 30.0); // pose assignment every k deg rot 
     keyframeRadGap = deg2rad(keyframeDegGap);
 
 	nh.param<double>("sc_dist_thres", scDistThres, 0.2);  
@@ -959,12 +1043,12 @@ int main(int argc, char **argv)
     scManager.setSCdistThres(scDistThres);
     scManager.setMaximumRadius(scMaximumRadius);
 
-    float filter_size = 0.2; 
+    float filter_size = 0.4; 
     downSizeFilterScancontext.setLeafSize(filter_size, filter_size, filter_size);
     downSizeFilterICP.setLeafSize(filter_size, filter_size, filter_size);
 
     double mapVizFilterSize;
-	nh.param<double>("mapviz_filter_size", mapVizFilterSize, 0.2); // pose assignment every k frames 
+	nh.param<double>("mapviz_filter_size", mapVizFilterSize, 0.4); // pose assignment every k frames 
     downSizeFilterMapPGO.setLeafSize(mapVizFilterSize, mapVizFilterSize, mapVizFilterSize);
 
 	ros::Subscriber subLaserCloudFullRes = nh.subscribe<sensor_msgs::PointCloud2>("/lio/cloud_pgo", 100, laserCloudFullResHandler);
@@ -979,6 +1063,8 @@ int main(int argc, char **argv)
 
 	pubLoopScanLocal = nh.advertise<sensor_msgs::PointCloud2>("/loop_scan_local", 100);
 	pubLoopSubmapLocal = nh.advertise<sensor_msgs::PointCloud2>("/loop_submap_local", 100);
+
+     loop_constraint_pub = nh.advertise<visualization_msgs::MarkerArray>("loop_constraint",100);
 
 	std::thread posegraph_slam {process_pg}; // pose graph construction
 	std::thread lc_detection {process_lcd}; // loop closure detection 

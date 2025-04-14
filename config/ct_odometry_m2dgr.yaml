@@ -1,7 +1,7 @@
 ## Mode
 ## 1 : Odometry_Offline   |  2 : Odometry_Online
 mode: 2
-odometry_mode: 1  # LIO = 0, LICO = 1
+odometry_mode: 0  # LIO = 0, LICO = 1
 
 log_path: /home/h/hong.MD.degree/lico_ws/src/LICO-mid360/log
 config_path: /home/h/hong.MD.degree/lico_ws/src/LICO-mid360/config

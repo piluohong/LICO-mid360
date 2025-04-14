@@ -14,7 +14,7 @@ lidar_timestamp_end: false  # if the timestamp of a lidar scan is set at the end
 VLP16:  # Velodyne-VLP16
     N_SCAN: 16
     Horizon_SCAN: 1800
-    point_filter_num: 2
+    point_filter_num: 3
     edge_threshold: 1.0
     surf_threshold: 0.1
     odometry_surface_leaf_size: 0.5

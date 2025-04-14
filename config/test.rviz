@@ -7,25 +7,18 @@ Panels:
         - /Global Options1
         - /B-spline1/Trajectory1
         - /B-spline1/ControlPoint1
-        - /CurrentLiDARScan1
         - /CurrentLiDARScan1/Autocompute Value Bounds1
-        - /mapPointCloud1
         - /mapPointCloud1/Autocompute Value Bounds1
         - /TrackedMapPoints3D1/Autocompute Value Bounds1
         - /TF1/Frames1
-        - /aft_pgo_path1
         - /Odometry1/Shape1
         - /Odometry2/Shape1
         - /nogroundMap1/Autocompute Value Bounds1
         - /groundMap1/Autocompute Value Bounds1
-        - /pathCloud1
         - /pathCloud1/Autocompute Value Bounds1
         - /livoxCloudFlat1/Autocompute Value Bounds1
-        - /livoxCloudPgoWithoutDeskew1
         - /livoxCloudPgoWithoutDeskew1/Autocompute Value Bounds1
-        - /loop_scan1
         - /loop_scan1/Autocompute Value Bounds1
-        - /loop_map1
         - /loop_map1/Autocompute Value Bounds1
       Splitter Ratio: 0.5984405279159546
     Tree Height: 680
@@ -47,7 +40,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: pathCloud
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -150,7 +143,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: FlatColor
+      Color Transformer: Intensity
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -178,7 +171,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: AxisColor
+      Color Transformer: Intensity
       Decay Time: 1000
       Enabled: false
       Invert Rainbow: false
@@ -398,7 +391,7 @@ Visualization Manager:
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
         Value: Axes
-      Topic: /aft_pgo_odom
+      Topic: /aft_mapped_to_init
       Unreliable: false
       Value: true
     - Angle Tolerance: 0.009999999776482582
@@ -528,8 +521,8 @@ Visualization Manager:
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
-        Max Value: 220.72706604003906
-        Min Value: -0.003004596335813403
+        Max Value: 199.12759399414062
+        Min Value: 0
         Value: true
       Axis: X
       Channel Name: intensity
@@ -581,7 +574,7 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Alpha: 0.5
+    - Alpha: 0.4000000059604645
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -591,7 +584,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: FlatColor
+      Color Transformer: AxisColor
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -665,6 +658,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /loop_constraint
+      Name: Loopdata
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
@@ -693,25 +694,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 145.93026733398438
+      Distance: 114.92195129394531
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 143.14974975585938
-        Y: -11.784908294677734
-        Z: -6.74937629699707
+        X: 112.86759948730469
+        Y: 0.9551061391830444
+        Z: -6.749355792999268
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.4197964668273926
+      Pitch: 1.5697963237762451
       Target Frame: map
       Value: ThirdPersonFollower (rviz)
-      Yaw: 1.9357388019561768
+      Yaw: 0.8539315462112427
     Saved: ~
 Window Geometry:
   Displays:
@@ -739,5 +740,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1024
-  X: 0
-  Y: 180
+  X: 51
+  Y: 324
