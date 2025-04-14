@@ -4,8 +4,8 @@
   <!-- <arg name="config_path"       default = "/config/ct_odometry_r3live.yaml" /> -->
   <!-- <arg name="config_path"       default = "/config/ct_odometry_fastlivo.yaml" /> -->
   <!-- <arg name="config_path"       default = "/config/ct_odometry_viral.yaml" /> -->
-  <!-- <arg name="config_path"       default = "/config/ct_odometry_lvisam.yaml" /> -->
-  <arg name="config_path"       default = "/config/ct_odometry_m2dgr.yaml" />
+  <arg name="config_path"       default = "/config/ct_odometry_lvisam.yaml" />
+  <!-- <arg name="config_path"       default = "/config/ct_odometry_m2dgr.yaml" /> -->
   <arg name="bag_path"          default = "" />  
   <arg name="pasue_time"        default = "-1" />
   <arg name="verbose"           default = "true" />  
@@ -19,6 +19,7 @@
     <param name="bag_path"        type="string" value="$(arg bag_path)" />
     <param name="pasue_time"      type="double" value="$(arg pasue_time)" />
     <param name="verbose"         type="bool"   value="$(arg verbose)" />
+
   </node>
   <!-- loop -->
   <!-- <node pkg="cocolic" type="alaserPGO" name="alaserPGO" output="screen" />  -->

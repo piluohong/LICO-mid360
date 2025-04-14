@@ -3,14 +3,19 @@
 * Now there has some imrpoved things:
 * Added rosbag function;
 * Added ikd-tree and ivox to manage local-map.
+* pt2plane residual to gicp residual
+* add ground segmentation and closure opt based on KNN and voxel registration
 * fixed bug with velodyne lidar (for m2dgr)
 * improve code structure
 
 ## Platform
-<img src="figure/大论文/9.png" width="60%" alt="" />
+
+<img src="figure/大论文/9.png" width="80%" alt="" />
 
 ## Experiments
+
 * SCAU（西湖）
+
 <p>
 <img src="figure/大论文/1.png" width="80%" alt="" />
 <img src="figure/大论文/2.png" width="80%" alt="" />
@@ -58,7 +63,7 @@ cd ~/catkin_ws/src/LICO-mid360 && mkdir data
 
 ## Run
 
-+ Download [R3LIVE dataset](https://github.com/ziv-lin/r3live_dataset) or [FAST-LIVO dataset](https://connecthkuhk-my.sharepoint.com/personal/zhengcr_connect_hku_hk/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fzhengcr%5Fconnect%5Fhku%5Fhk%2FDocuments%2FFAST%2DLIVO%2DDatasets&ga=1) or [NTU-VIRAL dataset](https://ntu-aris.github.io/ntu_viral_dataset/) or [LVI-SAM dataset](https://drive.google.com/drive/folders/1q2NZnsgNmezFemoxhHnrDnp1JV_bqrgV).
++ Download other open-source datasets:[R3LIVE dataset](https://github.com/ziv-lin/r3live_dataset) or [FAST-LIVO dataset](https://connecthkuhk-my.sharepoint.com/personal/zhengcr_connect_hku_hk/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fzhengcr%5Fconnect%5Fhku%5Fhk%2FDocuments%2FFAST%2DLIVO%2DDatasets&ga=1) or [NTU-VIRAL dataset](https://ntu-aris.github.io/ntu_viral_dataset/) or [LVI-SAM dataset](https://drive.google.com/drive/folders/1q2NZnsgNmezFemoxhHnrDnp1JV_bqrgV).
 + Configure parameters in the `config/ct_odometry_xxx.yaml` file.
 
   - `log_path`: the path to log
@@ -75,3 +80,7 @@ cd ~/catkin_ws/src/LICO-mid360 && mkdir data
 ## Acknowledgement
 
 Thanks for Clic, Coco-LIC, LIO-SAM, FAST-LIO2 && Faster-LIO
+
+## LICENSE
+
+The code is released under the [GNU General Public License v3 (GPL-3)](https://www.gnu.org/licenses/gpl-3.0.txt).
