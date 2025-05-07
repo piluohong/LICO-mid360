@@ -159,6 +159,14 @@ target_link_libraries(livox_solve
   "/home/h/ku/pcl-1.14-installpath/lib"
 )
 
+add_executable(gpf src/gpf_node.cpp )
+target_link_libraries(gpf 
+   lidar_lib 
+   r3live_lib
+${thirdparty_libraries}
+"/home/h/ku/pcl-1.14-installpath/lib"
+)
+
 add_library(spline_lib src/spline/trajectory.cpp)
 target_link_libraries(spline_lib ${thirdparty_libraries})
 
@@ -171,6 +179,7 @@ file(GLOB lidar_odometry_files
     "src/lidar/livox_feature_extraction.cpp"  
     "include/ikd-tree/ikd_Tree.cpp"
     "include/ivox3d/ivox3d_node.hpp"
+    "include/ground_seg/gpf.hpp"
 )
 add_library(lidar_lib ${lidar_odometry_files})
 target_link_libraries(lidar_lib spline_lib ${thirdparty_libraries})
@@ -196,7 +205,6 @@ add_executable(odometry_node
    src/odom/odometry_manager.cpp
    src/odom/factor/analytic_diff/marginalization_factor.cpp
    src/utils/parameter_struct.cpp
-   include/ground_seg/gpf.hpp
 )
 target_link_libraries(odometry_node 
    spline_lib 
@@ -206,6 +214,8 @@ target_link_libraries(odometry_node
   #  fmt::fmt
   "/home/h/ku/pcl-1.14-installpath/lib"
 )
+
+
 
 
 #Ncnn

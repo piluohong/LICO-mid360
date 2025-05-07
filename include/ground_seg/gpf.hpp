@@ -1,13 +1,16 @@
 #include <memory>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <pcl/common/centroid.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
+// #include <mutex>
 
 class GroundSegmentationNode {
 public:
@@ -23,10 +26,12 @@ public:
 
         ground_pub_ = nh.advertise<sensor_msgs::PointCloud2>("/ground_cloud", 1);
         non_ground_pub_ = nh.advertise<sensor_msgs::PointCloud2>("/non_ground_cloud", 1);
+        terrain_map_pub_ = nh.advertise<sensor_msgs::PointCloud2>("/terrain_map", 1);
 
         ground_plane_cloud.reset(new pcl::PointCloud<pcl::PointXYZ>());
         ground_point_cloud.reset(new pcl::PointCloud<pcl::PointXYZ>());
         noground_point_cloud.reset(new pcl::PointCloud<pcl::PointXYZ>());
+        terrain_map_cloud.reset(new pcl::PointCloud<pcl::PointXYZI>());
 
         ROS_INFO("Open segground\n");
         // ROS_INFO_STREAM(ros::this_node::getName() << " initialized with:\n");
@@ -60,7 +65,8 @@ private:
         }
         
         extract_initial_seeds(*cloud);
-        // 迭代
+        float t0 = omp_get_wtime();
+        // 平面参数迭代
         for(int i = 0; i < N_iter; i++){
             if(i == 0) th_dist_ = 0.2;
             if(i == 1) th_dist_ = 0.1;
@@ -69,18 +75,21 @@ private:
             ground_plane_cloud->clear();
             ground_point_cloud->clear();
             noground_point_cloud->clear();
-            extract_plane_cloud(*cloud,ground_point_cloud,noground_point_cloud);
-               
+            terrain_map_cloud->clear();
+            extract_plane_cloud(*cloud,ground_point_cloud,noground_point_cloud,terrain_map_cloud);
         }
+        float t1 = omp_get_wtime();
+        std::cout << "Cost time: " << (t1 - t0) * 1000<< " ms\n"; 
 
         ground_vec.push_back(*ground_point_cloud);
         noground_vec.push_back(*noground_point_cloud);
         // 6. 发布结果
-        publishResults(input_msg->header, ground_point_cloud, noground_point_cloud);
+        publishResults(input_msg->header, ground_point_cloud, noground_point_cloud,terrain_map_cloud);
 
         ground_plane_cloud->clear();
         ground_point_cloud->clear();
         noground_point_cloud->clear();
+        terrain_map_cloud->clear();
 
     }
 
@@ -93,7 +102,7 @@ private:
     }
     double lpr_height = cnt != 0 ? height_sum / cnt : 0;	// 求解其高度均值					
     for (int i = 0; i < input_point_cloud.points.size(); i++){
-        if (input_point_cloud.points[i].z < lpr_height + 0.6){ //0.6 -> raw lidar's z
+        if (input_point_cloud.points[i].z < lpr_height + lidar_z){//raw lidar's z
             ground_plane_cloud->points.push_back(input_point_cloud.points[i]);
         }
     }
@@ -149,7 +158,7 @@ void estimate_plane_parameter(void){
 
 void extract_plane_cloud(const pcl::PointCloud<pcl::PointXYZ> input_point_cloud,
                         pcl::PointCloud<pcl::PointXYZ>::Ptr & ground_point_cloud,
-                        pcl::PointCloud<pcl::PointXYZ>::Ptr & noground_point_cloud){
+                        pcl::PointCloud<pcl::PointXYZ>::Ptr & noground_point_cloud, pcl::PointCloud<pcl::PointXYZI>::Ptr & terrain_map_cloud){
     //point cloud to matrix
     Eigen::MatrixXf points_matrix(input_point_cloud.points.size(), 3);
     int j = 0;
@@ -158,12 +167,17 @@ void extract_plane_cloud(const pcl::PointCloud<pcl::PointXYZ> input_point_cloud,
     }
     Eigen::VectorXf result_dis = points_matrix * plane_normal_;
     for (int r = 0; r < result_dis.rows(); r++){
+        
+        pcl::PointXYZI pt(input_point_cloud[r].x,input_point_cloud[r].y,input_point_cloud[r].z,0.1);
         if (result_dis[r] < th_dist_d_){
             ground_point_cloud->points.push_back(input_point_cloud[r]);
-        }
-        else{
+            pt.intensity = -0.1;
+        }else{
             noground_point_cloud->points.push_back(input_point_cloud[r]);
+            pt.intensity = result_dis[r];
         }
+         terrain_map_cloud->points.push_back(pt);
+        
     }
     *ground_plane_cloud = *ground_point_cloud;
     return;
@@ -172,7 +186,7 @@ void extract_plane_cloud(const pcl::PointCloud<pcl::PointXYZ> input_point_cloud,
 
     void publishResults(const std_msgs::Header& header,
                        const pcl::PointCloud<pcl::PointXYZ>::Ptr& ground,
-                       const pcl::PointCloud<pcl::PointXYZ>::Ptr& non_ground) {
+                       const pcl::PointCloud<pcl::PointXYZ>::Ptr& non_ground,const pcl::PointCloud<pcl::PointXYZI>::Ptr& terrain_map) {
         if (!ground->empty()) {
             sensor_msgs::PointCloud2 msg;
             pcl::toROSMsg(*ground, msg);
@@ -185,6 +199,13 @@ void extract_plane_cloud(const pcl::PointCloud<pcl::PointXYZ> input_point_cloud,
             pcl::toROSMsg(*non_ground, msg);
             msg.header = header;
             non_ground_pub_.publish(msg);
+        }
+
+        if (!terrain_map->empty()) {
+            sensor_msgs::PointCloud2 msg;
+            pcl::toROSMsg(*terrain_map, msg);
+            msg.header = header;
+            terrain_map_pub_.publish(msg);
         }
     }
 public:
@@ -218,20 +239,22 @@ public:
 
     // 成员变量
     ros::Subscriber sub_;
-    ros::Publisher ground_pub_, non_ground_pub_;
+    ros::Publisher ground_pub_, non_ground_pub_, terrain_map_pub_;
     pcl::SACSegmentation<pcl::PointXYZ> seg_;
-    std::mutex seg_mutex_;
+    // std::mutex seg_mutex_;
     double distance_threshold_ = 0.05;
     int max_iterations_ = 1000;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr ground_plane_cloud;
      pcl::PointCloud<pcl::PointXYZ>::Ptr ground_point_cloud;
       pcl::PointCloud<pcl::PointXYZ>::Ptr noground_point_cloud;
+      pcl::PointCloud<pcl::PointXYZI>::Ptr terrain_map_cloud;
 
       std::vector<pcl::PointCloud<pcl::PointXYZ>> ground_vec;
       std::vector<pcl::PointCloud<pcl::PointXYZ>> noground_vec;
 
       Eigen::Vector3f plane_normal_;
+      int lidar_z = 0.8;
       float th_dist_d_;
       float th_dist_ = 0.1;
       float dis_ = 0.;
